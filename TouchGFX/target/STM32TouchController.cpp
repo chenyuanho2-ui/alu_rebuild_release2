@@ -48,9 +48,9 @@ bool STM32TouchController::sampleTouch(int32_t& x, int32_t& y)
      *
      */
 	
-	Touch_Scan();	// µ÷ÓÃ´¥ÃþÉ¨Ãè
-	if(touchInfo.flag == 1) {	// Èç¹û¼ì²âµ½´¥Ãþ
-		x = touchInfo.x[0];		// ¸³Óè×ø±êÖµ
+	Touch_Scan();	// ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½É¨ï¿½ï¿½
+	if(touchInfo.flag == 1) {	// ï¿½ï¿½ï¿½ï¿½ï¿½âµ½ï¿½ï¿½ï¿½ï¿½
+		x = touchInfo.x[0];		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 		y = touchInfo.y[0];
 		return true;
 	} else {

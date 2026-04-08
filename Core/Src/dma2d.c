@@ -57,7 +57,7 @@ void MX_DMA2D_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN DMA2D_Init 2 */
-// 原本的代码后面还设置了中断，不过对于cubeMX来说，生成在HAL_DMA2D_MspInit里
+// 原锟斤拷锟侥达拷锟斤拷锟斤拷婊癸拷锟斤拷锟斤拷锟斤拷卸希锟斤拷锟斤拷锟斤拷锟斤拷锟絚ubeMX锟斤拷说锟斤拷锟斤拷锟斤拷锟斤拷HAL_DMA2D_MspInit锟斤拷
   /* USER CODE END DMA2D_Init 2 */
 
 }

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextDatabase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="texts.xsd" Version="4.20.0">
+  <Languages>
+    <Language Id="GB" />
+  </Languages>
+  <Texts>
+    <TextGroup Id="Group1" />
+    <TextGroup Id="Unsorted">
+      <Text Id="__SingleUse_4MTQ" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">100</Translation>
+      </Text>
+      <Text Id="__SingleUse_295L" Alignment="Right" TypographyId="alu_middle">
+        <Translation Language="GB">输出&lt;value&gt; ％</Translation>
+      </Text>
+      <Text Id="__SingleUse_HXT7" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">0.0</Translation>
+      </Text>
+      <Text Id="__SingleUse_XMX1" Alignment="Left" TypographyId="alu_middle">
+        <Translation Language="GB">功率阈值&lt;value&gt; A</Translation>
+      </Text>
+      <Text Id="__SingleUse_7B51" Alignment="Left" TypographyId="Large">
+        <Translation Language="GB">Launching</Translation>
+      </Text>
+      <Text Id="__SingleUse_K912" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_LCXR" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">1</Translation>
+      </Text>
+      <Text Id="__SingleUse_YXPS" Alignment="Left" TypographyId="alu_middle">
+        <Translation Language="GB">文件: dat_&lt;value&gt;.csv</Translation>
+      </Text>
+      <Text Id="__SingleUse_N4MS" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">0.0</Translation>
+      </Text>
+      <Text Id="__SingleUse_K3GK" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">功率：&lt;value&gt; A</Translation>
+      </Text>
+      <Text Id="__SingleUse_DN48" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">30</Translation>
+      </Text>
+      <Text Id="__SingleUse_E61F" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">阈值：&lt;value&gt; ℃</Translation>
+      </Text>
+      <Text Id="__SingleUse_5GP3" Alignment="Center" TypographyId="Default">
+        <Translation Language="GB">Switch</Translation>
+      </Text>
+      <Text Id="__SingleUse_R52T" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">30</Translation>
+      </Text>
+      <Text Id="__SingleUse_IV0N" Alignment="Left" TypographyId="alu_middle">
+        <Translation Language="GB">温度阈值&lt;value&gt; ℃</Translation>
+      </Text>
+      <Text Id="__SingleUse_298T" Alignment="Right" TypographyId="Small">
+        <Translation Language="GB">&lt;&gt;℃</Translation>
+      </Text>
+      <Text Id="__SingleUse_1ZB9" Alignment="Center" TypographyId="Small">
+        <Translation Language="GB">&lt;&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_V80S" Alignment="Left" TypographyId="alu_font">
+        <Translation Language="GB">0.00</Translation>
+      </Text>
+      <Text Id="__SingleUse_R0YL" Alignment="Right" TypographyId="alu_middle">
+        <Translation Language="GB">温度&lt;value&gt; ℃</Translation>
+      </Text>
+      <Text Id="__SingleUse_ORA2" Alignment="Center" TypographyId="Default">
+        <Translation Language="GB">return</Translation>
+      </Text>
+    </TextGroup>
+  </Texts>
+  <Typographies>
+    <Typography Id="Default" Font="verdana.ttf" Size="20" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacters=".-_" WildcardCharacterRanges="0-9,a-z,A-Z" />
+    <Typography Id="Large" Font="verdana.ttf" Size="40" Bpp="4" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Small" Font="times.ttf" Size="10" Bpp="4" Direction="LTR" FallbackCharacter="?" WidgetWildcardCharacters="-., 0123456789" />
+    <Typography Id="alu_font" Font="AdobeHeitiStd-Regular.otf" Size="40" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacters=".-" WildcardCharacterRanges="0-9" />
+    <Typography Id="alu_middle" Font="AdobeHeitiStd-Regular.otf" Size="30" Bpp="4" Direction="LTR" FallbackCharacter="?" WildcardCharacters=".-_" WildcardCharacterRanges="0-9,a-z,A-Z" />
+  </Typographies>
+</TextDatabase>

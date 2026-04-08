@@ -1,0 +1,697 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "ScrLaunch",
+        "CanvasBufferSize": 12000,
+        "Components": [
+          {
+            "Type": "Box",
+            "Name": "box1",
+            "Width": 800,
+            "Height": 480,
+            "Color": {
+              "Red": 192,
+              "Green": 153,
+              "Blue": 255
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textArea1",
+            "X": 298,
+            "Y": 216,
+            "Width": 204,
+            "Height": 49,
+            "TextId": "__SingleUse_7B51",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true
+          },
+          {
+            "Type": "Circle",
+            "Name": "circle1",
+            "X": 250,
+            "Y": 90,
+            "Width": 300,
+            "Height": 300,
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "CenterX": 150.0,
+            "CenterY": 150.0,
+            "Radius": 120.0,
+            "LineWidth": 3.0,
+            "EndAngle": 360.0,
+            "CapPrecision": "Butt"
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerOnEveryTick",
+              "TickCount": 100
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "ScrMain"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "ScrMain",
+        "Components": [
+          {
+            "Type": "Box",
+            "Name": "box1",
+            "Width": 800,
+            "Height": 488,
+            "Color": {
+              "Red": 28,
+              "Green": 28,
+              "Blue": 28
+            }
+          },
+          {
+            "Type": "Box",
+            "Name": "box2",
+            "X": 380,
+            "Y": 40,
+            "Width": 392,
+            "Height": 416,
+            "Color": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            },
+            "Alpha": 50
+          },
+          {
+            "Type": "Box",
+            "Name": "box3",
+            "Width": 800,
+            "Height": 20,
+            "Color": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            }
+          },
+          {
+            "Type": "Box",
+            "Name": "box4",
+            "Y": 120,
+            "Width": 380,
+            "Height": 15,
+            "Color": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            },
+            "Alpha": 50
+          },
+          {
+            "Type": "ButtonWithLabel",
+            "Name": "btn1",
+            "X": 11,
+            "Y": 391,
+            "Width": 170,
+            "Height": 60,
+            "Pressed": "__designer\\Blue_Buttons_Round_Edge_small_pressed.png",
+            "Released": "__designer\\Blue_Buttons_Round_Edge_small.png",
+            "TextId": "__SingleUse_5GP3",
+            "ReleasedColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "PressedColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "TextRotation": "0",
+            "Style": "Style4"
+          },
+          {
+            "Type": "Button",
+            "Name": "btnAddThres",
+            "X": 48,
+            "Y": 257,
+            "Width": 48,
+            "Height": 48,
+            "Pressed": "ico_add_activate.png",
+            "Released": "ico_add.png"
+          },
+          {
+            "Type": "Button",
+            "Name": "btnDecThres",
+            "X": 48,
+            "Y": 324,
+            "Width": 48,
+            "Height": 48,
+            "Pressed": "ico_dev_activate.png",
+            "Released": "ico_dev.png"
+          },
+          {
+            "Type": "Button",
+            "Name": "btnFile",
+            "X": 352,
+            "Y": 40,
+            "Width": 20,
+            "Height": 20,
+            "Pressed": "ico_file_activate.png",
+            "Released": "ico_file.png"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "tempArea1",
+            "X": 33,
+            "Y": 153,
+            "Width": 214,
+            "Height": 80,
+            "TextId": "__SingleUse_E61F",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_DN48",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "powerArea1",
+            "X": 33,
+            "Y": 47,
+            "Width": 210,
+            "Height": 80,
+            "TextId": "__SingleUse_K3GK",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_N4MS",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "Box",
+            "Name": "box4_1",
+            "Y": 218,
+            "Width": 380,
+            "Height": 15,
+            "Color": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            },
+            "Alpha": 50
+          },
+          {
+            "Type": "ScrollableContainer",
+            "Name": "scrollableContainer1",
+            "X": 401,
+            "Y": 60,
+            "Width": 350,
+            "Height": 380,
+            "VerticalScrollEnabled": true,
+            "ScrollbarsVisible": true,
+            "ScrollbarsColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "ScrollbarsAlpha": 255,
+            "Components": [
+              {
+                "Type": "ListLayout",
+                "Name": "listLayout1",
+                "X": 50,
+                "Y": 106,
+                "Width": 250,
+                "Height": 250,
+                "Direction": "South",
+                "Clickable": true,
+                "Components": []
+              }
+            ]
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "btn1"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen1"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Screen1",
+        "CanvasBufferSize": 12000,
+        "Components": [
+          {
+            "Type": "ToggleButton",
+            "Name": "toggleButton1",
+            "X": 660,
+            "Y": 434,
+            "Width": 128,
+            "Height": 38,
+            "Pressed": "__designer\\Blue_Togglebars_Toggle_round_large_button_ON.png",
+            "Released": "__designer\\Blue_Togglebars_Toggle_round_large_button_OFF.png",
+            "Style": "Style4"
+          },
+          {
+            "Type": "Box",
+            "Name": "box1",
+            "Width": 800,
+            "Height": 480,
+            "Color": {
+              "Red": 28,
+              "Green": 28,
+              "Blue": 28
+            }
+          },
+          {
+            "Type": "Box",
+            "Name": "box2",
+            "X": 236,
+            "Y": 36,
+            "Width": 552,
+            "Height": 422,
+            "Color": {
+              "Red": 46,
+              "Green": 52,
+              "Blue": 56
+            }
+          },
+          {
+            "Type": "Box",
+            "Name": "box3",
+            "Width": 800,
+            "Height": 20,
+            "Color": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            }
+          },
+          {
+            "Type": "ButtonWithLabel",
+            "Name": "btn1",
+            "X": 31,
+            "Y": 332,
+            "Width": 170,
+            "Height": 60,
+            "Pressed": "__designer\\Blue_Buttons_Round_Edge_small_pressed.png",
+            "Released": "__designer\\Blue_Buttons_Round_Edge_small.png",
+            "TextId": "__SingleUse_ORA2",
+            "ReleasedColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "PressedColor": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "TextRotation": "0",
+            "Style": "Style4"
+          },
+          {
+            "Type": "DynamicGraph",
+            "Name": "tempGraph1",
+            "X": 236,
+            "Y": 36,
+            "Width": 552,
+            "Height": 422,
+            "DataSeed": 1862021287,
+            "NumberOfValues": 99,
+            "MaxY": 109.0,
+            "Precision": "1",
+            "UseCustomVisibleDataPointRange": true,
+            "LastIndex": 99,
+            "XAxisScale": 1.0,
+            "LabelSizeTop": 10,
+            "LabelSizeBottom": 20,
+            "LabelSizeLeft": 35,
+            "LabelSizeRight": 10,
+            "GraphType": "GraphScroll",
+            "GraphDrawers": [
+              {
+                "Type": "AreaDrawer",
+                "FileNameImage": "",
+                "Color": {
+                  "Red": 20,
+                  "Green": 151,
+                  "Blue": 197
+                },
+                "Alpha": 50
+              },
+              {
+                "Type": "LineDrawer",
+                "LineWidth": 2,
+                "FileNameImage": "",
+                "Color": {
+                  "Red": 20,
+                  "Green": 151,
+                  "Blue": 197
+                }
+              }
+            ],
+            "XAxisGrid": {
+              "Type": "GraphGrid",
+              "Interval": 10.0,
+              "LineWidth": 1,
+              "Alpha": 150
+            },
+            "MinorXAxisGrid": {
+              "Type": "GraphGrid",
+              "Interval": 5.0,
+              "LineWidth": 1,
+              "Alpha": 50
+            },
+            "YAxisGrid": {
+              "Type": "GraphGrid",
+              "Interval": 10.0,
+              "LineWidth": 1,
+              "Alpha": 150
+            },
+            "XAxisLabel": {
+              "Type": "GraphLabel",
+              "Interval": 10.0,
+              "DecimalSeparator": "Point",
+              "TextColor": {
+                "Red": 255,
+                "Green": 255,
+                "Blue": 255
+              },
+              "TextId": "__SingleUse_1ZB9",
+              "TextRotation": "0",
+              "Position": "Bottom"
+            },
+            "YAxisLabel": {
+              "Type": "GraphLabel",
+              "Interval": 10.0,
+              "DecimalSeparator": "Point",
+              "TextColor": {
+                "Red": 255,
+                "Green": 255,
+                "Blue": 255
+              },
+              "TextId": "__SingleUse_298T",
+              "TextRotation": "0",
+              "Position": "Left"
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "filenameArea1",
+            "X": 7,
+            "Y": 412,
+            "Width": 204,
+            "Height": 60,
+            "TextId": "__SingleUse_YXPS",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_LCXR",
+              "UseBuffer": true,
+              "BufferSize": 14
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "pwmArea1",
+            "X": 43,
+            "Y": 247,
+            "Width": 147,
+            "Height": 60,
+            "TextId": "__SingleUse_295L",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_4MTQ",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "tempArea1",
+            "X": 36,
+            "Y": 187,
+            "Width": 154,
+            "Height": 60,
+            "TextId": "__SingleUse_R0YL",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_V80S",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "thresPowerArea1",
+            "X": 7,
+            "Y": 96,
+            "Width": 188,
+            "Height": 60,
+            "TextId": "__SingleUse_XMX1",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_HXT7",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "thresTempArea1",
+            "X": 7,
+            "Y": 36,
+            "Width": 190,
+            "Height": 60,
+            "TextId": "__SingleUse_IV0N",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true,
+            "Wildcard1": {
+              "TextId": "__SingleUse_R52T",
+              "UseBuffer": true,
+              "BufferSize": 10
+            }
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "toggleButton1"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "alu_back_func_demo"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "btn1"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "ScrMain"
+            }
+          }
+        ]
+      }
+    ],
+    "CustomContainerDefinitions": [
+      {
+        "Name": "FileNameCnt",
+        "Width": 350,
+        "Height": 50,
+        "Components": [
+          {
+            "Type": "BoxWithBorder",
+            "Name": "boxWithBorder1",
+            "Width": 350,
+            "Height": 50,
+            "Color": {
+              "Red": 28,
+              "Green": 28,
+              "Blue": 28
+            },
+            "BorderColor": {
+              "Red": 35,
+              "Green": 145,
+              "Blue": 204
+            },
+            "BorderSize": 2,
+            "Alpha": 150
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textArea1",
+            "X": 50,
+            "Y": 13,
+            "Width": 250,
+            "Height": 24,
+            "TextId": "__SingleUse_K912",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "UseBuffer": true,
+              "BufferSize": 14
+            }
+          },
+          {
+            "Type": "Button",
+            "Name": "btnDelete",
+            "X": 308,
+            "Y": 9,
+            "Width": 32,
+            "Height": 32,
+            "Pressed": "del_yellow.png",
+            "Released": "del_blue.png"
+          },
+          {
+            "Type": "Button",
+            "Name": "btnOpen",
+            "X": 11,
+            "Y": 9,
+            "Width": 32,
+            "Height": 32,
+            "Pressed": "file_open_yellow.png",
+            "Released": "file_open_blue.png"
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "AluDeleteInteraction",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "btnDelete"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "AluDeleteFile"
+            }
+          }
+        ]
+      }
+    ],
+    "Name": "MyApplication",
+    "Resolution": {
+      "Width": 800,
+      "Height": 480
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "ScrLaunch",
+    "SelectedStartupLanguage": "GB",
+    "Skin": "Blue",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 800,
+        "Height": 480
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": true
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Landscape",
+    "Family": "STM32H7",
+    "Platform": "m7",
+    "ProjectFile": "../alu_rebuild.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": []
+  },
+  "Version": "4.20.0"
+}

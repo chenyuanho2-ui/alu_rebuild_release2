@@ -1,0 +1,27 @@
+
+{
+  "Application": {
+    "Name": "alu_rebuild",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "AvailableColorDepths": [ 16 ],
+    "AvailableLCDs":
+    {
+      "16": "LCD16bpp"
+    },
+    "AvailableResolutions": [
+      {
+        "Width": 800,
+        "Height": 480
+      }
+    ],
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "Family": "STM32H7",
+    "SubFamily": "STM32H750 Value line",
+    "Platform": "m7",
+    "ProjectFile": "../alu_rebuild.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [
+    ]
+  },
+  "Version": "4.20.0"
+}

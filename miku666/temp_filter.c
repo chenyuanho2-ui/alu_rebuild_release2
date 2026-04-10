@@ -72,6 +72,7 @@ void TempFilter_Process(void) {
             // 清零，准备下一个 250ms 的周期
             temp_accumulator = 0;
             sample_count = 0;
+			
         }
         last_print_tick = current_tick;
     }

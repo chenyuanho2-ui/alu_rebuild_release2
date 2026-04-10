@@ -1,13 +1,36 @@
 #include "alu_temp.h"
-#include "temp_filter.h"  // 新增：引入我们的双通道测温接口
 
 
-// 劫持原有的测温接口
 double alu_SPI_gettemp(void)
 {
-    // 直接获取【通道A】的 20ms 实时平滑数据，转为 double 给 PID 用
-    // 这样原来的控制任务只要调用这个函数，拿到的就是 ADS1118 的最新数据
-    return (double)TempFilter_GetLatestAvgTemp();
+		double temp_couple;        // 温度值
+		uint16_t tmp;              // 临时值
+// 开启片选
+	  HAL_GPIO_WritePin(SPI2_CS_T_GPIO_Port, SPI2_CS_T_Pin, GPIO_PIN_RESET);
+//  第1次读取数据(高8位)
+		unsigned char txdata,rxdata;
+		txdata = 0XFF;
+		HAL_SPI_TransmitReceive(&hspi2,&txdata,&rxdata,1,1000);
+		tmp = rxdata;
+		tmp <<= 8;
+// 第2次读取数据(低8位)
+		HAL_SPI_TransmitReceive(&hspi2,&txdata,&rxdata,1,1000);		
+		tmp |= rxdata;
+// 关闭片选
+		HAL_GPIO_WritePin(SPI2_CS_T_GPIO_Port, SPI2_CS_T_Pin, GPIO_PIN_SET);
+		if (tmp & 4) {
+			tmp = 4095; //未检测到热电偶
+		} else {
+			tmp = tmp >> 3;
+		}
+		temp_couple = tmp * 1024.0 / 4096 - 23.75;
+		
+		if (temp_couple >= 100)
+			temp_couple = 100;
+		else if (temp_couple <= 0)
+			temp_couple = 0;
+		
+		return temp_couple;
 }
 
 void PID_init(PID_struct* pid_info) {

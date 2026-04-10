@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32H750xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../FATFS/Target;../FATFS/App;../TouchGFX/App;../TouchGFX/target/generated;../TouchGFX/target;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/Third_Party/FatFs/src;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Aluminium/Inc;../middlewares/st/touchgfx/framework/include;../touchgfx/generated/fonts/include;../touchgfx/generated/gui_generated/include;../touchgfx/generated/images/include;../touchgfx/generated/texts/include;../touchgfx/generated/videos/include;../touchgfx/gui/include;..\miku666</IncludePath>
+              <IncludePath>../Core/Inc;../FATFS/Target;../FATFS/App;../TouchGFX/App;../TouchGFX/target/generated;../TouchGFX/target;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/Third_Party/FatFs/src;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Aluminium/Inc;../middlewares/st/touchgfx/framework/include;../touchgfx/generated/fonts/include;../touchgfx/generated/gui_generated/include;../touchgfx/generated/images/include;../touchgfx/generated/texts/include;../touchgfx/generated/videos/include;../touchgfx/gui/include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1519,23 +1519,6 @@
         </Group>
         <Group>
           <GroupName>miku666</GroupName>
-          <Files>
-            <File>
-              <FileName>ads1118.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\miku666\ads1118.c</FilePath>
-            </File>
-            <File>
-              <FileName>temp_filter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\miku666\temp_filter.c</FilePath>
-            </File>
-            <File>
-              <FileName>thermocouple.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\miku666\thermocouple.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

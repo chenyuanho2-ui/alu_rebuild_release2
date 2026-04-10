@@ -44,7 +44,7 @@
 #include "alu_file.h"
 #include "alu_temp.h"
 //#include "alu_485.h"
-#include "temp_filter.h"  // 新增：引入双通道测温组件
+
 #include "alu_control.h"
 //#include <stdio.h>
 /* USER CODE END Includes */
@@ -72,7 +72,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-//static void MPU_Initialize(void);
+static void MPU_Initialize(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
@@ -265,10 +265,7 @@ void AluMain(void *argument)
 	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_RESET);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1); // 0~999
-	// ==========================================
-  // 【新增】：任务开始前，初始化 ADS1118 和内部时间戳
-	TempFilter_Init();
-  // ==========================================
+	
 	
 	Alu_list_init(&sd_file_list);  // 初始化文件列表
 	Alu_sniff_files(&sd_file_list,"/");// 扫描根目录
@@ -304,15 +301,8 @@ void AluMain(void *argument)
 
 	
 	long btns_statu = 0;  // 按键状态  
-
-	
   for(;;)
   {
-	  // ==========================================
-    // 【新增】：非阻塞状态机，自动判断是否满 20ms/250ms
-    // 它一点都不会卡你的核心 PID 线程！
-		TempFilter_Process();
-    // ==========================================
 	  
 		vTaskDelay(pdMS_TO_TICKS(50));
 	  
@@ -348,6 +338,21 @@ void AluMain(void *argument)
 
   }
 }
+
+/*
+void AluSubProgress(void *argument)
+{
+	// 测试DAC输出直流模拟电压,驱动FM147模块,需要调试,
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1);
+	HAL_DAC_Start(&hdac1,DAC_CHANNEL_1);
+  for(;;)
+  {
+	vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+*/
+
+
 
 
 /* USER CODE END 4 */

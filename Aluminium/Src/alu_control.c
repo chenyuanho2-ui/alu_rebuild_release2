@@ -1,23 +1,33 @@
 #include "alu_control.h"
 #include "alu_file.h"
 #include "alu_temp.h"
+#include "temp_filter.h"
 
-
-
+// åŸæœ‰çš„æŒ‰é”®çŠ¶æ€å˜é‡
 uint8_t key1_pressed;
 uint8_t key2_pressed;
 uint8_t key3_pressed;
 uint8_t key4_pressed;
 uint8_t key_foot_pressed;
 
-long btn_sniff_pressed() {
-	
+// ==========================================
+// ã€æ–°å¢ã€‘ï¼šå…¨å±€çŠ¶æ€å˜é‡çš„å®é™…å®šä¹‰
+// è¿™äº›å˜é‡è¢«æå–å‡ºæ¥ï¼Œä¾› freertos.c é‡Œçš„æ§åˆ¶ä»»åŠ¡è·¨æ–‡ä»¶è°ƒç”¨
+// ==========================================
+uint8_t is_heating_active = 0;   // é»˜è®¤ä¸åŠ çƒ­
+int heating_num_count = 1;       // é»˜è®¤è®¡æ•°ä¸º 1
+char file_name_cache[14];        // æ–‡ä»¶åç¼“å­˜
+PID_struct pid_TEMP;             // å…¨å±€ PID å®ä¾‹
 
-	key1_pressed = 0;key2_pressed = 0;key3_pressed = 0;key4_pressed = 0;key_foot_pressed = 0;  	     // ÏÈÖØÖÃ
+// ==========================================
+// åŸæœ‰çš„æŒ‰é”®æ‰«æä¸å‚æ•°ä¿®æ”¹å‡½æ•° (ä¿æŒåŸæ ·)
+// ==========================================
+long btn_sniff_pressed() {
+	key1_pressed = 0;key2_pressed = 0;key3_pressed = 0;key4_pressed = 0;key_foot_pressed = 0;  	     // å…ˆé‡ç½®
 	
-	if (HAL_GPIO_ReadPin(btn_1_GPIO_Port, btn_1_Pin) == 0) { // ÅĞ¶Ï°´¼ü
-		vTaskDelay(pdMS_TO_TICKS(50));										     // Èí¼şÏû¶¶
-		if (HAL_GPIO_ReadPin(btn_1_GPIO_Port, btn_1_Pin) == 0) // ¸øÒ»¸öÖµ
+	if (HAL_GPIO_ReadPin(btn_1_GPIO_Port, btn_1_Pin) == 0) { // åˆ¤æ–­æŒ‰é”®
+		vTaskDelay(pdMS_TO_TICKS(50));										     // è½¯ä»¶æ¶ˆæŠ–
+		if (HAL_GPIO_ReadPin(btn_1_GPIO_Port, btn_1_Pin) == 0) // ç»™ä¸€ä¸ªå€¼
 			key1_pressed = 1;
 	}
 	if (HAL_GPIO_ReadPin(btn_2_GPIO_Port, btn_2_Pin) == 0) {
@@ -45,20 +55,14 @@ long btn_sniff_pressed() {
 	return btns_statu;
 }
 
-
-
-
-
 int active_key_1(int choose_type) {
-	choose_type ^= 1;    // Òì»ò1,½øĞĞ0ºÍ1µÄÇĞ»»
-	osSemaphoreRelease(alu_chooseHandle);  // ·¢ËÍĞÅºÅÁ¿¸üĞÂ
-	return choose_type;  // ·µ»ØÑ¡ÔñÀàĞÍ¸üĞÂ
+	choose_type ^= 1;    // å¼‚æˆ–1,è¿›è¡Œ0å’Œ1çš„åˆ‡æ¢
+	osSemaphoreRelease(alu_chooseHandle);  // å‘é€ä¿¡å·é‡æ›´æ–°
+	return choose_type;  // è¿”å›é€‰æ‹©ç±»å‹æ›´æ–°
 }
 
-
-
 int active_key_2(int index_choose,float *temp_thres,float *power_thres) {
-	if (index_choose==0)  //±íÊ¾µ±Ç°ÉèÖÃÎÂ¶ÈãĞÖµ
+	if (index_choose==0)  //è¡¨ç¤ºå½“å‰è®¾ç½®æ¸©åº¦é˜ˆå€¼
 	{  
 		if (*temp_thres < 150) {
 			*temp_thres = *temp_thres+5;
@@ -66,7 +70,7 @@ int active_key_2(int index_choose,float *temp_thres,float *power_thres) {
 			*temp_thres = 150;
 		}
 	}
-	else if(index_choose==1)  //±íÊ¾µ±Ç°ÉèÖÃ¹¦ÂÊãĞÖµ
+	else if(index_choose==1)  //è¡¨ç¤ºå½“å‰è®¾ç½®åŠŸç‡é˜ˆå€¼
 	{
 		if (*power_thres < 9.0f) {
 			*power_thres = *power_thres+0.1f;
@@ -74,12 +78,12 @@ int active_key_2(int index_choose,float *temp_thres,float *power_thres) {
 			*power_thres = 9.0f;
 		}
 	}
-	osSemaphoreRelease(alu_thresholdHandle);  // ·¢ËÍĞÅºÅÁ¿¸üĞÂ
+	osSemaphoreRelease(alu_thresholdHandle);  // å‘é€ä¿¡å·é‡æ›´æ–°
 	return 1;
 }
 
 int active_key_3(int index_choose,float *temp_thres,float *power_thres) {
-	if (index_choose==0)  //±íÊ¾µ±Ç°ÉèÖÃÎÂ¶ÈãĞÖµ
+	if (index_choose==0)  //è¡¨ç¤ºå½“å‰è®¾ç½®æ¸©åº¦é˜ˆå€¼
 	{  
 		if (*temp_thres>=5){
 			*temp_thres = *temp_thres-5;
@@ -87,7 +91,7 @@ int active_key_3(int index_choose,float *temp_thres,float *power_thres) {
 			*temp_thres = 0;
 		}
 	}
-	else if(index_choose==1)  //±íÊ¾µ±Ç°ÉèÖÃ¹¦ÂÊãĞÖµ
+	else if(index_choose==1)  //è¡¨ç¤ºå½“å‰è®¾ç½®åŠŸç‡é˜ˆå€¼
 	{
 		if (*power_thres>=0.1f){
 			*power_thres = *power_thres-0.1f;
@@ -95,143 +99,107 @@ int active_key_3(int index_choose,float *temp_thres,float *power_thres) {
 			*power_thres = 0.0f;
 		}
 	}
-	osSemaphoreRelease(alu_thresholdHandle);  // ·¢ËÍĞÅºÅÁ¿¸üĞÂ
+	osSemaphoreRelease(alu_thresholdHandle);  // å‘é€ä¿¡å·é‡æ›´æ–°
 	return 1;
 }
 
-
 int active_key_4(UART_HandleTypeDef *huart, TIM_HandleTypeDef *htim, uint8_t *data_485, float power_thres){
-
-	data_485[6] = (uint8_t)(power_thres * 10);// ½«³ËÒÔ10ºóµÄÖµ,Ç¿×ªÖ±½Ó¾ÍÊÇÕûÊı²¿·Ö
-	// Òì»ò²Ù×÷·Åµ½Ğ£ÑéÎ»
+	data_485[6] = (uint8_t)(power_thres * 10);
 	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6];
 	data_485[7] = xorResult;
 	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_SET);
-	HAL_UART_Transmit(huart,(uint8_t*)data_485,10,0xFFFF);  // ÒÑ¾­´«Ö¸ÕëÁË
+	HAL_UART_Transmit(huart,(uint8_t*)data_485,10,0xFFFF);
 	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_RESET);
-	
-	
-	printf("send_data:{ ");
-    for (int i = 0; i < 10; i++) {
-        printf("0x%02X, ", data_485[i]);
-    }printf(" }\n");
-	
 	return 1;
 }
-
 
 int active_key_1vs4(int* temp_modify) {
 	if (*temp_modify == 0){
 		*temp_modify = 10;
-		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_RESET);  // À­µÍLEDµãÁÁ+10
+		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_RESET);
 	} else {
 		*temp_modify = 0;
-		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_SET);    // À­¸ßLEDÏ¨Ãğ+ 0
+		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,GPIO_PIN_SET);
 	}
 	vTaskDelay(pdMS_TO_TICKS(1000));
 	return 1;
 }
 
+extern double K_Temperature;      
+extern int    index_screen;       
+extern int    index_choose;       
+extern AluDynList sd_file_list;   
+extern int    num_file;           
+extern float  pwm_percent;        
+extern int    temp_modify;        
 
 
-
-extern double K_Temperature;      // ÎÂ¶ÈÖµ
-extern int    index_screen;       // ÆÁÄ»Ë÷Òı
-extern int    index_choose;       // ÉèÖÃË÷Òı ¹¦ÂÊ»¹ÊÇÎÂ¶È
-extern AluDynList sd_file_list;   // ÎÄ¼şÁĞ±í
-extern int    num_file;           // ´ı´´½¨ÎÄ¼şÃû
-extern float  pwm_percent;        // pwn±ÈÀı
-
-extern int    temp_modify;        // ÎÂ¶ÈÆ«ÒÆ
-/*
-	Ìø×ª´°¿Ú
-	485·¢ËÍ¹¦ÂÊãĞÖµ
-	°´ÕÕÎÂ¶ÈãĞÖµ½øĞĞPIDµ÷ÊÔ
-	´æ´¢ÎÄ¼şÃû
-*/
-int active_key_foot(uint8_t *data_485, float temp_thres,float power_thres)
+// ====================================================================
+// ã€æ–°å¢å‡½æ•°ã€‘ï¼šåŠ çƒ­åœæ­¢ä¸ç³»ç»Ÿæ¸…ç†é€»è¾‘
+// è´Ÿè´£å…³é—­ç¡¬ä»¶(RS485)å¹¶æ¢å¤ UI(åˆ‡å›ä¸»å±å¹•ã€é‡æ–°æ‰«ææ–‡ä»¶)
+// ====================================================================
+void Heating_Stop_Routine(void)
 {
-	uint8_t key_foot_pressed = 0;  // ÖØÖÃ½ÅÌ¤×´Ì¬
+	// 1. å…³é—­ RS485 è¾“å‡º
+	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
+	uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
+	HAL_UART_Transmit(&huart4, (uint8_t*)alu_485_off, 10, 0xFFFF);
+	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
 	
-	data_485[6] = (uint8_t)(power_thres * 10);// ½«³ËÒÔ10ºóµÄÖµ,Ç¿×ªÖ±½Ó¾ÍÊÇÕûÊı²¿·Ö
-	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6]; // Òì»ò²Ù×÷·Åµ½Ğ£ÑéÎ»
-	data_485[7] = xorResult;
-	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_SET);
-	HAL_UART_Transmit(&huart4,(uint8_t*)data_485,10,0xFFFF);  // ÒÑ¾­´«Ö¸ÕëÁË
-	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_RESET);
-	
-	
-	
-	
-	// ·¢ËÍÆÁÄ»ÇĞ»»ĞÅºÅÁ¿¸üĞÂ,ÇĞ»»µ½Srceen1
-	index_screen = 1;
-	osSemaphoreRelease(alu_screenHandle);  
-;  
-	
-	// È·¶¨±£´æÎÄ¼şÃû
-	num_file = Alu_SD_csv_num("/") + 1; // »ñµÃµ±Ç°¶ÔÓ¦´æ´¢µÄÎÄ¼şÃû
-	printf("num_file %d\n",num_file);
-	char file_name_cache[14];				// Õâ´Î²É¼¯µÄÎÄ¼şÃû  = "DAT_5.CSV"
-	sprintf(file_name_cache, "data_%d.csv", num_file);  //±ØĞëÊÇ<xxx>_%d.<xxx>µÄ¸ñÊ½£¬Alu_SD_csv_num¼ì²âĞÂÎÄ¼şÃûĞèÒª
-	
-	// ·¢ËÍãĞÖµĞÅºÅÁ¿¸üĞÂ
-	osSemaphoreRelease(alu_thresholdHandle);
-	
-	// ÎÄ¼ş¶ÁÈ¡Êı×é
-	uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
-	uint8_t BufferWrite[50] = " "; // Ã¿ĞĞĞ´ÈëµÄÊı¾İ
-	Alu_SD_write(BufferTitle, sizeof(BufferTitle), (const char *)file_name_cache);
+	// 2. æ¸…ç†æ ‡å¿—ä½ï¼Œå½»åº•åœæ­¢æ§åˆ¶ä»»åŠ¡é‡Œçš„ PID è¿ç®—
+	is_heating_active = 0;
     
-	// ³õÊ¼»¯PID¶ÔÏó
-	PID_struct pid_TEMP;      
-	PID_init(&pid_TEMP);
-	
-	// Ñ­»·²É¼¯ÎÂ¶È²¢°´ãĞÖµµ÷½ÚPWMÕ¼±È
-	int num_count = 1;
-	do{
-		K_Temperature = alu_SPI_gettemp(); // »ñÈ¡µ±Ç°ÎÂ¶ÈÖµ
-		if (K_Temperature >= 150)
-			K_Temperature = 150;
-		else if (K_Temperature <= 0)
-			K_Temperature = 0;
-		K_Temperature = K_Temperature + temp_modify;  // Ìí¼ÓÎÂ¶ÈÆ«ÒÆ
-		
-		pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000; // µ÷ÕûPID£¬Êä³öPWM±ÈÀı
-		
-		osSemaphoreRelease(alu_temperatureHandle);  // ·¢ËÍĞÅºÅÁ¿¸üĞÂ
-		
-		
-		sprintf((char *)BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", num_count, K_Temperature, pid_TEMP.speed[0], pid_TEMP.speed[1], pid_TEMP.speed[2]);
-//		sprintf((char *)BufferWrite, "%d,%.2f\n", num_count, K_Temperature);
-		Alu_SD_write(BufferWrite, sizeof(BufferWrite), (const char *)file_name_cache);  // ºÜÆæ¹Ö£¬ÎªÊ²Ã´ÔÚÁÙ½çÇøÖ®Íâ²ÅÄÜÕı³£¶ÁĞ´
-		num_count = num_count + 1;
-		
-		// ÑÓÊ±ÒÔ¼°ÍË³öµÄÅĞ¶Ï
-		vTaskDelay(pdMS_TO_TICKS(250));
-		if (num_count % 5 == 0 && num_count > 10) {     //  ¼ÓÉÏ10´ËÖ®ºó²Å½øĞĞ½áÊøÅĞ¶Ï
-			if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1) {  //ÅĞ¶Ï°´¼ü
-				HAL_Delay(20);                 // Èí¼şÏû¶¶
-				if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1)
-					key_foot_pressed = 1;      // ²ÈÏÂ 1
-			} else {
-					key_foot_pressed = 0;      // Ã»²È 0
-			}
-		}
-	} while (key_foot_pressed==0); // ¼ì²â½ÅÌ¤×´Ì¬²é¿´ÊÇ·ñÍË³ö ´Ó¼ì²â1±ä³É¼ì²â0
-	
-	
-	// ¹Ø±ÕÊä³ö,·¢ËÍÆÁÄ»ÇĞ»»ĞÅºÅÁ¿¸üĞÂ,ÇĞ»»µ½main,²¢¸üĞÂÎÄ¼şÁĞ±í
-	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_SET);
-	uint8_t alu_485_send[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
-	HAL_UART_Transmit(&huart4,(uint8_t*)alu_485_send,10,0xFFFF);
-	HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_RESET);
-	
+	// 3. å»¶æ—¶ç­‰å¾… SD å¡ç¼“å†²åŒºå®Œå…¨åˆ·å…¥ç¡¬ä»¶
 	vTaskDelay(pdMS_TO_TICKS(1000));
+    
+	// 4. é‡æ–°æ‰«ææ ¹ç›®å½•ä¸‹çš„æ–‡ä»¶
 	Alu_list_init(&sd_file_list);
-	Alu_sniff_files(&sd_file_list,"/");
+	Alu_sniff_files(&sd_file_list, "/");
+    
+	// 5. åˆ‡æ¢å›ä¸»å±å¹• (æ˜¾ç¤ºæ–‡ä»¶åˆ—è¡¨)
 	index_screen = 0;
 	osSemaphoreRelease(alu_screenHandle);  
 	vTaskDelay(pdMS_TO_TICKS(1000));
-	return 1;
 }
 
+// ====================================================================
+// ã€é‡æ„ã€‘ï¼šè„šè¸è§¦å‘å‡½æ•° (çº¯éé˜»å¡å¯åŠ¨æ¨¡å¼)
+// åªè¦è¸©ä¸‹è„šè¸ï¼Œè®¾ç½®å¥½åˆå§‹å‚æ•°åå°±ç«‹åˆ»é€€å‡ºï¼Œå”¤é†’åå°æ§åˆ¶ä»»åŠ¡ï¼Œç»ä¸æ­»ç­‰ï¼
+// ====================================================================
+int active_key_foot(uint8_t *data_485, float temp_thres, float power_thres)
+{
+	// 1. è®¾ç½®å¹¶å‘é€ RS485 å¼€å¯æŒ‡ä»¤
+	data_485[6] = (uint8_t)(power_thres * 10);
+	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6]; 
+	data_485[7] = xorResult;
+	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
+	HAL_UART_Transmit(&huart4, (uint8_t*)data_485, 10, 0xFFFF);  
+	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
+	
+	// 2. åˆ‡æ¢åˆ°åŠ çƒ­æ•°æ®æ˜¾ç¤ºç•Œé¢
+	index_screen = 1;
+	osSemaphoreRelease(alu_screenHandle);  
+	
+	// 3. å‡†å¤‡ç”Ÿæˆæ–°çš„ CSV æ•°æ®æ–‡ä»¶
+	num_file = Alu_SD_csv_num("/") + 1; 
+	sprintf(file_name_cache, "data_%d.csv", num_file);  
+	
+	// é€šçŸ¥ UI é˜ˆå€¼å¯èƒ½å·²æ”¹å˜
+	osSemaphoreRelease(alu_thresholdHandle);
+	
+	// 4. å†™å…¥ CSV è¡¨å¤´
+	uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
+	Alu_SD_write(BufferTitle, sizeof(BufferTitle), (const char *)file_name_cache);
+    
+	// 5. åˆå§‹åŒ– PID æ¨¡å—
+	PID_init(&pid_TEMP);
+	
+	// 6. é‡ç½®è®¡æ•°å™¨
+	heating_num_count = 1;
+	
+	// 7. ã€æ ¸å¿ƒæŒ‡ä»¤ã€‘ï¼šç‚¹ç«ï¼å°†æ ‡å¿—ä½ç½® 1ï¼Œå”¤é†’ Task_Control é‡Œçš„ PID å¾ªç¯
+	is_heating_active = 1;
+
+	// 8. ç«‹åˆ»è¿”å›ï¼Œç»ä¸æ­»é”å½“å‰æŒ‰é”®ä»»åŠ¡ï¼
+	return 1;
+}

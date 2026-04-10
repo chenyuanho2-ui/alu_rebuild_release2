@@ -26,6 +26,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_touchgfx.h"
+#include "temp_filter.h"
+#include "alu_temp.h"
+#include "alu_control.h"
+#include "alu_file.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,12 +55,14 @@
 osThreadId defaultTaskHandle;
 osThreadId aluMainHandle;
 osThreadId aluSubProgressHandle;
+osThreadId Task_ControlHandle;
 osMessageQId alu_temp_listHandle;
 osSemaphoreId alu_temperatureHandle;
 osSemaphoreId alu_thresholdHandle;
 osSemaphoreId alu_screenHandle;
 osSemaphoreId alu_chooseHandle;
 osSemaphoreId alu_savenameHandle;
+osSemaphoreId Sem_20msHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -65,6 +72,7 @@ osSemaphoreId alu_savenameHandle;
 void StartTouchGFX(void const * argument);
 void AluMain(void const * argument);
 void AluSubProgress(void const * argument);
+void StartTask_Control(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -135,6 +143,10 @@ void MX_FREERTOS_Init(void) {
   osSemaphoreDef(alu_savename);
   alu_savenameHandle = osSemaphoreCreate(osSemaphore(alu_savename), 1);
 
+  /* definition and creation of Sem_20ms */
+  osSemaphoreDef(Sem_20ms);
+  Sem_20msHandle = osSemaphoreCreate(osSemaphore(Sem_20ms), 1);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -158,12 +170,16 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of aluMain */
-  osThreadDef(aluMain, AluMain, osPriorityRealtime, 0, 4096);
+  osThreadDef(aluMain, AluMain, osPriorityNormal, 0, 4096);
   aluMainHandle = osThreadCreate(osThread(aluMain), NULL);
 
   /* definition and creation of aluSubProgress */
-  osThreadDef(aluSubProgress, AluSubProgress, osPriorityHigh, 0, 2048);
+  osThreadDef(aluSubProgress, AluSubProgress, osPriorityHigh, 0, 512);
   aluSubProgressHandle = osThreadCreate(osThread(aluSubProgress), NULL);
+
+  /* definition and creation of Task_Control */
+  osThreadDef(Task_Control, StartTask_Control, osPriorityRealtime, 0, 1024);
+  Task_ControlHandle = osThreadCreate(osThread(Task_Control), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -223,6 +239,24 @@ __weak void AluSubProgress(void const * argument)
     osDelay(1);
   }
   /* USER CODE END AluSubProgress */
+}
+
+/* USER CODE BEGIN Header_StartTask_Control */
+/**
+* @brief Function implementing the Task_Control thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask_Control */
+__weak void StartTask_Control(void const * argument)
+{
+  /* USER CODE BEGIN StartTask_Control */
+  /* Infinite loop */
+for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask_Control */
 }
 
 /* Private application code --------------------------------------------------*/

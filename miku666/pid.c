@@ -26,7 +26,8 @@ float PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_cur
 	// 误差积分值
 	pid_info->err_prev_2 = pid_info->err_prev_2 + pid_info->err;
 	// 积分输出
-	float speed_i = pid_info->Ki * pid_info->err;
+//	float speed_i = pid_info->Ki * pid_info->err;这是算成了Ki*e？
+	float speed_i = pid_info->Ki * pid_info->err_prev_2;//ki*积分e
 	// 微分输出
 	float speed_d = pid_info->Kd * (pid_info->err - pid_info->err_prev_1);
 	float speed = speed_p + speed_i + speed_d;

@@ -5,6 +5,7 @@
 #include "alu_file.h"
 #include "alu_temp.h"
 #include <stdio.h>
+#include <string.h>
 
 extern osSemaphoreId Sem_20msHandle;
 
@@ -25,8 +26,9 @@ void StartTask_Control(void const * argument)
 {
   TempFilter_Init();
   
-  uint32_t last_pid_tick = HAL_GetTick();
-  uint32_t last_stack_tick = HAL_GetTick(); // 新增：2秒监控一次的时间戳
+  // 定义软计数器
+  uint16_t tick_sd_card = 0;  // 用于 200ms 任务
+  uint16_t tick_health = 0;   // 用于 2000ms 任务
   
   /* Infinite loop */
   for(;;)
@@ -38,10 +40,11 @@ void StartTask_Control(void const * argument)
     TempFilter_Process();
     
     // ==========================================================
-    // 【新增】20ms PID 高频控制块
+    // 【20ms 高频核心区】
     // ==========================================================
     if (is_heating_active == 1) {
-        K_Temperature = alu_SPI_gettemp(); 
+        // 严禁使用 alu_SPI_gettemp()，必须使用滤波后的数据
+        K_Temperature = TempFilter_GetUIAvgTemp();
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
         K_Temperature = K_Temperature + temp_modify;  
@@ -50,10 +53,47 @@ void StartTask_Control(void const * argument)
     }
     
     // ==========================================================
-    // 3. 【系统健康状态监控通道】(每 2000ms 执行一次)
+    // 【200ms 低频控制区】(10个节拍)
     // ==========================================================
-    if (HAL_GetTick() - last_stack_tick >= 2000)
-    {
+    tick_sd_card++;
+    if (tick_sd_card >= 10) {
+        tick_sd_card = 0;
+        
+        // UI 刷新：200ms 刷新一次屏幕，达到 5Hz 丝滑刷新率
+        osSemaphoreRelease(alu_temperatureHandle);  
+        
+        // SD 卡记录
+        if (is_heating_active == 1) {
+            char BufferWrite[50] = " "; 
+            sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", 
+				heating_num_count, 
+				K_Temperature, 
+				pid_TEMP.speed[0], 
+				pid_TEMP.speed[1], 
+				pid_TEMP.speed[2]);
+            // 修复 SD 卡乱码 BUG：使用 strlen(BufferWrite) 作为长度参数
+            Alu_SD_write((uint8_t*)BufferWrite, strlen(BufferWrite), (const char *)file_name_cache);
+            
+            // 按脚踏开关停止加热的逻辑判定（5次即为 1秒）
+            if (heating_num_count % 5 == 0 && heating_num_count > 10) 
+            {
+                if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1) {  
+                    // 此时已经是 200ms 后，无需挂起 20ms，直接判定松开
+                    Heating_Stop_Routine();
+                }
+            }
+            
+            heating_num_count++;
+        }
+    }
+    
+    // ==========================================================
+    // 【2000ms 系统健康监控区】(100个节拍)
+    // ==========================================================
+    tick_health++;
+    if (tick_health >= 100) {
+        tick_health = 0;
+        
         // 强转为 TaskHandle_t 获取栈历史最低剩余容量
         uint32_t stack_ctrl = uxTaskGetStackHighWaterMark((TaskHandle_t)Task_ControlHandle);
         uint32_t stack_main = uxTaskGetStackHighWaterMark((TaskHandle_t)aluMainHandle);
@@ -66,34 +106,6 @@ void StartTask_Control(void const * argument)
         printf("TouchGFX Free     : %u Words\r\n", stack_gui);
 		printf("aluSubProgress Free     : %u Words\r\n", stack_sub);
         printf("=========================\r\n");
-        
-        last_stack_tick = HAL_GetTick();
-    }
-    
-    // ==========================================================
-    // 4. 【低频控制通道】：250ms UI 更新与 SD 卡记录
-    // ==========================================================
-    if (is_heating_active == 1 && (HAL_GetTick() - last_pid_tick >= 250))
-    {
-        // 屏幕降频适配 (500ms 刷新一次 UI)
-        if (heating_num_count % 2 == 0) {
-            osSemaphoreRelease(alu_temperatureHandle);  
-        }
-        
-        char BufferWrite[50] = " "; 
-        sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", heating_num_count, K_Temperature, pid_TEMP.speed[0], pid_TEMP.speed[1], pid_TEMP.speed[2]);
-        Alu_SD_write((uint8_t*)BufferWrite, sizeof(BufferWrite), (const char *)file_name_cache);
-        
-        if (heating_num_count % 5 == 0 && heating_num_count > 10) 
-        {     
-            if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1) {  
-                // 此时已经是 250ms 后，无需挂起 20ms，直接判定松开
-                Heating_Stop_Routine();
-            }
-        }
-        
-        heating_num_count++;
-        last_pid_tick = HAL_GetTick();
     }
   }
 }

@@ -15,6 +15,11 @@ extern osThreadId aluMainHandle;
 extern osThreadId aluSubProgressHandle;
 extern osThreadId Task_ControlHandle;
 
+extern double K_Temperature;
+extern float temp_modify;
+extern float temp_thres;
+extern float pwm_percent;
+
 void StartTask_Control(void const * argument)
 {
   TempFilter_Init();
@@ -30,6 +35,18 @@ void StartTask_Control(void const * argument)
     
     // 2. 20ms 高频测温与滤波
     TempFilter_Process();
+    
+    // ==========================================================
+    // 【新增】20ms PID 高频控制块
+    // ==========================================================
+    if (is_heating_active == 1) {
+        K_Temperature = alu_SPI_gettemp(); 
+        if (K_Temperature >= 150) K_Temperature = 150;
+        else if (K_Temperature <= 0) K_Temperature = 0;
+        K_Temperature = K_Temperature + temp_modify;  
+        
+        pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
+    }
     
     // ==========================================================
     // 3. 【系统健康状态监控通道】(每 2000ms 执行一次)
@@ -53,22 +70,10 @@ void StartTask_Control(void const * argument)
     }
     
     // ==========================================================
-    // 4. 【低频控制通道】：250ms PID 与 SD 卡记录
+    // 4. 【低频控制通道】：250ms UI 更新与 SD 卡记录
     // ==========================================================
     if (is_heating_active == 1 && (HAL_GetTick() - last_pid_tick >= 250))
     {
-        extern double K_Temperature;
-        extern float temp_modify;
-        extern float temp_thres;
-        extern float pwm_percent;
-        
-        K_Temperature = alu_SPI_gettemp(); 
-        if (K_Temperature >= 150) K_Temperature = 150;
-        else if (K_Temperature <= 0) K_Temperature = 0;
-        K_Temperature = K_Temperature + temp_modify;  
-        
-        pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000; 
-        
         // 屏幕降频适配 (500ms 刷新一次 UI)
         if (heating_num_count % 2 == 0) {
             osSemaphoreRelease(alu_temperatureHandle);  

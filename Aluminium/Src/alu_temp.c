@@ -18,9 +18,9 @@ void PID_init(PID_struct* pid_info) {
 	pid_info->err_prev_2 = 0.0;
 	pid_info->speed[0] = pid_info->speed[1] = pid_info->speed[2] = 0.0;
 	// 0.5 0.04 0.25
-	pid_info->Kp = 40; // 0.32 30                 T=500 Ti=5000000 Td=1000
-	pid_info->Ki = 20; // 0.16 30 * 250 / 600000  kp*计算周期/总积分时间
-	pid_info->Kd = 5;  // 0.04 30 * 1000 / 250    kp*微分时间/计算周期
+	pid_info->Kp = 40; // 比例参数保持不变
+	pid_info->Ki = 1.6; // 积分参数等效换算：20 * 0.08 = 1.6
+	pid_info->Kd = 62.5;  // 微分参数等效换算：5 / 0.08 = 62.5
 }
 
 

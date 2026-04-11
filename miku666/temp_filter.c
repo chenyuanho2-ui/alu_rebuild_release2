@@ -67,8 +67,6 @@ void TempFilter_Process(void) {
             // 计算这 250ms 内收集到的数据的平均值
             ui_display_temp = temp_accumulator / sample_count;
             
-
-            
             // 清零，准备下一个 250ms 的周期
             temp_accumulator = 0;
             sample_count = 0;

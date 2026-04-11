@@ -6,6 +6,10 @@
 #include "alu_temp.h"
 #include <stdio.h>
 #include <string.h>
+#include "FreeRTOS.h"
+#include "queue.h"
+
+extern QueueHandle_t SDWriteQueueHandle;
 
 extern osSemaphoreId Sem_20msHandle;
 
@@ -45,9 +49,10 @@ void StartTask_Control(void const * argument)
     if (is_heating_active == 1) {
         // 严禁使用 alu_SPI_gettemp()，必须使用滤波后的数据
         K_Temperature = TempFilter_GetUIAvgTemp();
+		K_Temperature = K_Temperature + temp_modify; 
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
-        K_Temperature = K_Temperature + temp_modify;  
+         
         
         pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
     }
@@ -63,16 +68,20 @@ void StartTask_Control(void const * argument)
         osSemaphoreRelease(alu_temperatureHandle);  
         
         // SD 卡记录
-        if (is_heating_active == 1) {
-            char BufferWrite[50] = " "; 
-            sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", 
-				heating_num_count, 
-				K_Temperature, 
-				pid_TEMP.speed[0], 
-				pid_TEMP.speed[1], 
-				pid_TEMP.speed[2]);
-            // 修复 SD 卡乱码 BUG：使用 strlen(BufferWrite) 作为长度参数
-            Alu_SD_write((uint8_t*)BufferWrite, strlen(BufferWrite), (const char *)file_name_cache);
+            if (is_heating_active == 1) {
+                char BufferWrite[64] = {0}; // 扩大至 64 字节防止溢出
+                sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", 
+                    heating_num_count, 
+                    K_Temperature, 
+                    pid_TEMP.speed[0], 
+                    pid_TEMP.speed[1], 
+                    pid_TEMP.speed[2]);
+                
+                // 【修改点】：不再调用 Alu_SD_write！改为发送到 FreeRTOS 队列
+                // 等待时间设为 0（非阻塞），即使队列满了也立刻返回，绝不卡顿 PID 任务
+                if (SDWriteQueueHandle != NULL) {
+                    xQueueSend(SDWriteQueueHandle, BufferWrite, 0);
+                }
             
             // 按脚踏开关停止加热的逻辑判定（5次即为 1秒）
             if (heating_num_count % 5 == 0 && heating_num_count > 10) 

@@ -4,6 +4,11 @@
 #include "usart.h"
 #include "tim.h"
 #include <stdio.h>
+#include <string.h>
+#include "FreeRTOS.h"
+#include "queue.h"
+
+extern QueueHandle_t SDWriteQueueHandle;
 
 
 double K_Temperature   = 0;        // 温度值
@@ -44,15 +49,30 @@ void AluMain(void const * argument)
   int num_file = Alu_SD_csv_num("/") + 1; // 扫描根目录下的文件数
   printf("num_file %d\n",num_file);
   
+  // 4. 创建 SD 卡写入队列
+  if (SDWriteQueueHandle == NULL) {
+      SDWriteQueueHandle = xQueueCreate(10, 64);
+  }
+  
   vTaskDelay(pdMS_TO_TICKS(1000));
   index_screen = 0;
   osSemaphoreRelease(alu_screenHandle);  // 释放屏幕切换信号量资源,切换到SrcMain
   
   long btns_statu = 0;  // 按键状态  
+  char recv_buf[64]; // 接收缓冲区
   
   /* Infinite loop */
   for(;;)
   {
+      // 后台慢慢处理 SD 卡写入请求
+      // timeout 设为 0 表示快速轮询，不挂起当前 UI 任务
+		if (SDWriteQueueHandle != NULL) {
+			// 把 if 改成 while，一口气把队列里积压的数据全写进SD卡
+			while (xQueueReceive(SDWriteQueueHandle, recv_buf, 0) == pdTRUE) {
+				Alu_SD_write((uint8_t*)recv_buf, strlen(recv_buf), (const char *)file_name_cache);
+			}
+		}
+      
       btns_statu = btn_sniff_pressed();
       
       if (btns_statu>0){

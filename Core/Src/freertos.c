@@ -51,6 +51,9 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+/* 定义一个全局的 SD 卡写入队列句柄 */
+QueueHandle_t SDWriteQueueHandle = NULL;
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId aluMainHandle;

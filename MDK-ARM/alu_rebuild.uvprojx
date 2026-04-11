@@ -1515,11 +1515,6 @@
               <FileType>1</FileType>
               <FilePath>..\Aluminium\Src\touch_iic.c</FilePath>
             </File>
-            <File>
-              <FileName>alu_485.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Aluminium\Src\alu_485.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -1544,6 +1539,16 @@
               <FileName>task_control.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\miku666\task_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>ui_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\miku666\ui_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\miku666\pid.c</FilePath>
             </File>
           </Files>
         </Group>

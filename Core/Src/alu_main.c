@@ -5,13 +5,19 @@
 #include "tim.h"
 #include <stdio.h>
 
-// 引入外部需要用到的全局变量
-extern float temp_thres;
-extern float power_thres;
-extern int   temp_modify;
-extern int   index_screen;
-extern int   index_choose;
-extern AluDynList sd_file_list;
+
+double K_Temperature   = 0;        // 温度值
+float  pwm_percent     = 0;        // pwm占空比
+int    temp_modify     = 0;        // 温度偏移
+float  temp_thres      = 30;	   // 温度阈值
+
+float  power_thres     = 0;        // 功率阈值
+
+int    index_screen    = 2;        // 屏幕切换 0为SrcMain,1为Screen1, 2为launch
+int    index_choose    = 1;        // 0为设置温度阈值,1为设置功率阈值
+
+AluDynList sd_file_list;           // 动态文件列表
+int    num_file        = 0;        // 当前扫描到的文件数量
 
 // ==========================================================
 // 按键与 UI 逻辑主任务 (覆盖 freertos.c 中的 __weak 空函数)

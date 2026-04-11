@@ -172,16 +172,3 @@ void Alu_sniff_files(AluDynList* list, const TCHAR *sniff_path){
     f_closedir(&AluDir);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

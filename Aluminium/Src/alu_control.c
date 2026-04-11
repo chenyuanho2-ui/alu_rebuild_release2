@@ -1,6 +1,6 @@
 #include "alu_control.h"
 #include "alu_file.h"
-#include "alu_temp.h"
+#include "pid.h"
 #include "temp_filter.h"
 
 // 原有的按键状态变量

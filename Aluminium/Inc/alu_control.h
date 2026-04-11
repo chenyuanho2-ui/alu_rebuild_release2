@@ -4,7 +4,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usart.h"
-#include "alu_temp.h" // 确保能认识 PID_struct
+#include "pid.h" // 包含PID结构定义
 
 extern osSemaphoreId alu_chooseHandle;         // 选择是温度还是功率
 extern osSemaphoreId alu_temperatureHandle;    // 温度阈值设置信号量

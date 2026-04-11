@@ -43,7 +43,6 @@
 
 #include "alu_file.h"
 #include "alu_temp.h"
-//#include "alu_485.h"
 #include "temp_filter.h"  // 新增：引入双通道测温组件
 #include "alu_control.h"
 //#include <stdio.h>
@@ -72,7 +71,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MPU_Initialize(void);
+//static void MPU_Initialize(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
@@ -81,29 +80,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern osSemaphoreId alu_chooseHandle;         // 选择温度/功率阈值信号量
-extern osSemaphoreId alu_temperatureHandle;    // 温度读取信号量
-extern osSemaphoreId alu_thresholdHandle;      // 阈值修改信号量
-extern osSemaphoreId alu_screenHandle;         // 屏幕切换信号量
-extern osSemaphoreId alu_savenameHandle;       // 保存文件名信号量
-extern SPI_HandleTypeDef hspi2;
-extern DAC_HandleTypeDef hdac1;
 extern osSemaphoreId Sem_20msHandle;
-
-double K_Temperature   = 0;        // 温度值
-float  pwm_percent     = 0;        // pwm占空比
-int    temp_modify     = 0;        // 温度偏移
-float  temp_thres      = 30;	   // 温度阈值
-
-float  power_thres     = 0;        // 功率阈值
-
-int    index_screen    = 2;        // 屏幕切换 0为SrcMain,1为Screen1, 2为launch
-int    index_choose    = 1;        // 0为设置温度阈值,1为设置功率阈值
-
-AluDynList sd_file_list;           // 动态文件列表
-int    num_file        = 0;        // 当前扫描到的文件数量
-
-
 /* USER CODE END 0 */
 
 /**
@@ -245,17 +222,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-// 触摸屏相关的线程
-void StartTouchGFX(void *argument)
-{
-	MX_TouchGFX_Process();	// 运行TouchGFX界面
-  for(;;){
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-}
-
-
-
 
 
 /* USER CODE END 4 */

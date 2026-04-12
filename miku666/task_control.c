@@ -1,6 +1,7 @@
 #include "task_control.h"
 #include "temp_filter.h"
 #include "pid.h"
+#include "thermocouple.h"
 #include "alu_control.h"
 #include "alu_file.h"
 #include "alu_temp.h"
@@ -29,91 +30,105 @@ extern float pwm_percent;
 void StartTask_Control(void const * argument)
 {
   TempFilter_Init();
-  
-  // 定义软计数器
-  uint16_t tick_sd_card = 0;  // 用于 200ms 任务
-  uint16_t tick_health = 0;   // 用于 2000ms 任务
-  
-  /* Infinite loop */
+
+  // 10ms 周期计数器
+  uint32_t tick_10ms = 0;
+
+  // ========== [耗时监控变量] ==========
+  uint32_t start_tick = 0;
+  uint32_t current_cost = 0;
+  uint32_t max_cost_in_200ms = 0;
+
   for(;;)
   {
-    // 1. 死等定时器 20ms 信号量
+    // 等待 10ms 定时器信号量 (TIM7)
     osSemaphoreWait(Sem_20msHandle, osWaitForever);
-    
-    // 2. 20ms 高频测温与滤波
+
+    // 记录本轮起始时间
+    start_tick = xTaskGetTickCount();
+
+    tick_10ms++;
+
+    // 10ms 高频区: 读取热电偶温度并进行滤波
     TempFilter_Process();
-    
-    // ==========================================================
-    // 【20ms 高频核心区】
-    // ==========================================================
+
+    // ========== [10ms 高频区 - 核心 PID 控制] ==========
     if (is_heating_active == 1) {
-        // 严禁使用 alu_SPI_gettemp()，必须使用滤波后的数据
+        // 获取滤波后的温度
         K_Temperature = TempFilter_GetUIAvgTemp();
-		K_Temperature = K_Temperature + temp_modify; 
+        K_Temperature = K_Temperature + temp_modify;
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
-         
-        
+
+        // 执行 PID 迭代计算 (dt = 0.01s)
         pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
     }
-    
-    // ==========================================================
-    // 【200ms 低频控制区】(10个节拍)
-    // ==========================================================
-    tick_sd_card++;
-    if (tick_sd_card >= 10) {
-        tick_sd_card = 0;
-        
-        // UI 刷新：200ms 刷新一次屏幕，达到 5Hz 丝滑刷新率
-        osSemaphoreRelease(alu_temperatureHandle);  
-        
-        // SD 卡记录
-            if (is_heating_active == 1) {
-                char BufferWrite[64] = {0}; // 扩大至 64 字节防止溢出
-                sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f", 
-                    heating_num_count, 
-                    K_Temperature, 
-                    pid_TEMP.speed[0], 
-                    pid_TEMP.speed[1], 
-                    pid_TEMP.speed[2]);
-                
-                // 【修改点】：不再调用 Alu_SD_write！改为发送到 FreeRTOS 队列
-                // 等待时间设为 0（非阻塞），即使队列满了也立刻返回，绝不卡顿 PID 任务
-                if (SDWriteQueueHandle != NULL) {
-                    xQueueSend(SDWriteQueueHandle, BufferWrite, 0);
-                }
-            
-            // 按脚踏开关停止加热的逻辑判定（5次即为 1秒）
-            if (heating_num_count % 5 == 0 && heating_num_count > 10) 
+
+    // 计算本轮耗时
+    current_cost = xTaskGetTickCount() - start_tick;
+
+    // 擂台法记录 200ms 内的最大耗时
+    if (current_cost > max_cost_in_200ms) {
+        max_cost_in_200ms = current_cost;
+    }
+
+    // 极简高频打印（仅打印温度数字，减少串口阻塞时长）
+    printf("%.2f\r\n", K_Temperature);
+
+    // ========== [200ms 低频区] (每 20 个 10ms 节拍) ==========
+    if (tick_10ms % 20 == 0) {
+        // 更新冷端补偿电压 (环境温度变化慢，200ms 刷新一次足够)
+        Thermocouple_UpdateColdJunction();
+
+        // 释放 UI 刷新信号量
+        osSemaphoreRelease(alu_temperatureHandle);
+
+        if (is_heating_active == 1) {
+            // 构造 SD 卡记录数据
+            char BufferWrite[64] = {0};
+            sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f",
+                heating_num_count,
+                K_Temperature,
+                pid_TEMP.speed[0],
+                pid_TEMP.speed[1],
+                pid_TEMP.speed[2]);
+
+            // 发送到 SD 卡写队列 (非阻塞)
+            if (SDWriteQueueHandle != NULL) {
+                xQueueSend(SDWriteQueueHandle, BufferWrite, 0);
+            }
+
+            // 脚踏开关停止加热判定 (每 5 次即 1 秒检测一次)
+            if (heating_num_count % 5 == 0 && heating_num_count > 10)
             {
-                if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1) {  
-                    // 此时已经是 200ms 后，无需挂起 20ms，直接判定松开
+                if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 1) {
                     Heating_Stop_Routine();
                 }
             }
-            
+
             heating_num_count++;
         }
+
+        // 打印系统运行状态诊断信息
+        printf("[SYS %u] MaxCost:%ums\r\n", xTaskGetTickCount(), max_cost_in_200ms);
+
+        // 重置最大耗时，为下一个 200ms 周期做准备
+        max_cost_in_200ms = 0;
     }
-    
-    // ==========================================================
-    // 【2000ms 系统健康监控区】(100个节拍)
-    // ==========================================================
-    tick_health++;
-    if (tick_health >= 100) {
-        tick_health = 0;
-        
-        // 强转为 TaskHandle_t 获取栈历史最低剩余容量
+
+    // ========== [2000ms 超低频区] (每 200 个 10ms 节拍) ==========
+    if (tick_10ms % 200 == 0) {
+        // 获取各任务栈历史最低剩余容量
         uint32_t stack_ctrl = uxTaskGetStackHighWaterMark((TaskHandle_t)Task_ControlHandle);
         uint32_t stack_main = uxTaskGetStackHighWaterMark((TaskHandle_t)aluMainHandle);
         uint32_t stack_gui  = uxTaskGetStackHighWaterMark((TaskHandle_t)defaultTaskHandle);
-		uint32_t stack_sub  = uxTaskGetStackHighWaterMark((TaskHandle_t)aluSubProgressHandle);
-        
+        uint32_t stack_sub  = uxTaskGetStackHighWaterMark((TaskHandle_t)aluSubProgressHandle);
+
         printf("\r\n=== [SYS RAM Monitor] ===\r\n");
         printf("Task_Control Free : %u Words\r\n", stack_ctrl);
         printf("AluMain Free      : %u Words\r\n", stack_main);
         printf("TouchGFX Free     : %u Words\r\n", stack_gui);
-		printf("aluSubProgress Free     : %u Words\r\n", stack_sub);
+        printf("aluSubProgress Free     : %u Words\r\n", stack_sub);
         printf("=========================\r\n");
     }
   }

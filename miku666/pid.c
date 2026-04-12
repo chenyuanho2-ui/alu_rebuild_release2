@@ -9,10 +9,11 @@ void PID_init(PID_struct* pid_info) {
 	pid_info->err_prev_1 = 0.0;
 	pid_info->err_prev_2 = 0.0;
 	pid_info->speed[0] = pid_info->speed[1] = pid_info->speed[2] = 0.0;
-	// 0.5 0.04 0.25
-	pid_info->Kp = 40; // 比例参数保持不变
-	pid_info->Ki = 1.6; // 积分参数等效换算：20 * 0.08 = 1.6
-	pid_info->Kd = 62.5;  // 微分参数等效换算：5 / 0.08 = 62.5
+	// PID 参数 (适用于 10ms 控制周期，dt = 0.01s)
+	// 旧 20ms 参数参考: Kp=40, Ki=1.6(=0.08*20), Kd=62.5(=5/0.08)
+	pid_info->Kp = 40;                                                    // 比例系数保持不变
+	pid_info->Ki = 0.8;  // 积分系数: 0.08 * 10ms = 0.8 (旧 1.6 减半，防止积分过冲)
+	pid_info->Kd = 125.0; // 微分系数: 5 / 0.01 = 125.0 (旧 62.5 加倍，补偿更快采样)
 }
 
 

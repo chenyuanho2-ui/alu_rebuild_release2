@@ -49,7 +49,7 @@ uint16_t ADS1118_WriteRead(uint16_t config_cmd) {
 float ADS1118_GetInternalTemp(void) {
     ADS1118_WriteRead(CONFIG_TEMP_SENSOR);
     
-    osDelay(3); // 转换等待，不阻塞 GUI 渲染
+    osDelay(2);
     
     uint16_t raw_data = ADS1118_WriteRead(0x0000); 
     int16_t temp_reg = (int16_t)raw_data >> 2;
@@ -61,9 +61,9 @@ float ADS1118_GetInternalTemp(void) {
  */
 float ADS1118_GetVoltage_mV(void) {
     ADS1118_WriteRead(CONFIG_TC_ADC);
-    
-    osDelay(3); // 转换等待
-    
+
+    osDelay(2); // ADC 转换等待 2ms (10ms 周期内留出余量)
+
     int16_t raw_data = (int16_t)ADS1118_WriteRead(0x0000);
     return (float)raw_data * 0.0078125f;
 }

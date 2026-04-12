@@ -23,15 +23,15 @@ void TempFilter_Process(void) {
     float cal_temp = ADS1118_CalibrateTemp(raw_temp);
     
     // 3. 一阶低通滤波 (EMA) - 彻底消除 ADC 噪声且保持曲线连续
-    const float alpha = 1.0f; 
+    const float alpha = 0.8f; 
     if (filtered_val == -999.0f) filtered_val = cal_temp;
     filtered_val = alpha * cal_temp + (1.0f - alpha) * filtered_val;
     
     // 4. 更新供 PID 使用的全局变量
     latest_avg_temp = filtered_val;
 
-    // 每 20ms 输出一次最鲜活的 PID 供电温度，正好可以配合串口示波器看加热曲线！
-    printf("[Monitor] 20ms PID Temp: %.2f C\r\n", latest_avg_temp);
+//    // 每 20ms 输出一次最鲜活的 PID 供电温度，正好可以配合串口示波器看加热曲线！
+//    printf("[Monitor] 20ms PID Temp: %.2f C\r\n", latest_avg_temp);
 }
 
 // ---------------------------------------------------------

@@ -9,8 +9,8 @@
 
 /* 11点校准表定义 */
 #define CAL_POINTS 11
-static const float cal_measured[CAL_POINTS] = {0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f, 100.0f};
-static const float cal_actual[CAL_POINTS]   = {0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f, 100.0f};
+static const float cal_measured[CAL_POINTS] = {0.0f, 17.8f, 21.5f, 29.0f, 43.0f, 49.0f, 56.0f, 63.0f, 70.0f, 79.0f, 100.0f};
+static const float cal_actual[CAL_POINTS]   = {0.0f, 16.4f, 20.7f, 31.0f, 43.5f, 50.8f, 60.5f, 65.0f, 71.2f, 81.5f, 100.0f};
 
 /**
  * @brief 芯片初始化

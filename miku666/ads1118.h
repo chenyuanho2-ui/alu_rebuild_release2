@@ -15,7 +15,7 @@
 #define ADS1118_MODE_CONTINUE  (0 << 8)  // 连续转换模式
 #define ADS1118_MODE_SINGLE    (1 << 8)  // 单次转换模式 (推荐)
 
-#define ADS1118_DR_860SPS      (7 << 5)  // 采样率 860 SPS
+#define ADS1118_DR_475SPS      (6 << 5)  // 采样率 475 SPS
 
 #define ADS1118_TS_ADC         (0 << 4)  // ADC 模式 (测外部电压)
 #define ADS1118_TS_TEMP        (1 << 4)  // 内部温度传感器模式 (冷端补偿)
@@ -25,11 +25,11 @@
 
 /* 常用配置组合 */
 #define CONFIG_TEMP_SENSOR  (ADS1118_SS_ONCE | ADS1118_MUX_01 | ADS1118_PGA_256mV | \
-                             ADS1118_MODE_SINGLE | ADS1118_DR_860SPS | ADS1118_TS_TEMP | \
+                             ADS1118_MODE_SINGLE | ADS1118_DR_475SPS | ADS1118_TS_TEMP | \
                              ADS1118_PULLUP_EN | ADS1118_NOP_VALID)
 
 #define CONFIG_TC_ADC       (ADS1118_SS_ONCE | ADS1118_MUX_01 | ADS1118_PGA_256mV | \
-                             ADS1118_MODE_SINGLE | ADS1118_DR_860SPS | ADS1118_TS_ADC | \
+                             ADS1118_MODE_SINGLE | ADS1118_DR_475SPS | ADS1118_TS_ADC | \
                              ADS1118_PULLUP_EN | ADS1118_NOP_VALID)
 
 /* 函数声明 */

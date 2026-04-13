@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 /* 使用 H750 工程中定义的 SPI2 片选宏 */
-#define ADS1118_CS_LOW()   HAL_GPIO_WritePin(SPI2_CS_T_GPIO_Port, SPI2_CS_T_Pin, GPIO_PIN_RESET)
-#define ADS1118_CS_HIGH()  HAL_GPIO_WritePin(SPI2_CS_T_GPIO_Port, SPI2_CS_T_Pin, GPIO_PIN_SET)
+#define ADS1118_CS_LOW()   HAL_GPIO_WritePin(SPI2_CS_ADS_GPIO_Port, SPI2_CS_ADS_Pin, GPIO_PIN_RESET)
+#define ADS1118_CS_HIGH()  HAL_GPIO_WritePin(SPI2_CS_ADS_GPIO_Port, SPI2_CS_ADS_Pin, GPIO_PIN_SET)
 
 /* 11点校准表定义 */
 #define CAL_POINTS 11
@@ -16,7 +16,7 @@ static const float cal_actual[CAL_POINTS]   = {0.0f, 16.4f, 20.7f, 31.0f, 43.5f,
  * @brief 芯片初始化
  */
 void ADS1118_Init(void) {
-    ADS1118_CS_HIGH(); 
+    ADS1118_CS_HIGH();
     osDelay(10); // 使用 RTOS 延时替代 HAL_Delay
 }
 
@@ -33,10 +33,10 @@ uint16_t ADS1118_WriteRead(uint16_t config_cmd) {
     tx_data[1] = (uint8_t)(config_cmd & 0xFF);
 
     ADS1118_CS_LOW();
-    
+
     // 使用当前工程的 hspi2
     HAL_SPI_TransmitReceive(&hspi2, tx_data, rx_data, 2, 1000);
-    
+
     ADS1118_CS_HIGH();
 
     result = (rx_data[0] << 8) | rx_data[1];
@@ -48,10 +48,10 @@ uint16_t ADS1118_WriteRead(uint16_t config_cmd) {
  */
 float ADS1118_GetInternalTemp(void) {
     ADS1118_WriteRead(CONFIG_TEMP_SENSOR);
-    
+
     osDelay(3);
-    
-    uint16_t raw_data = ADS1118_WriteRead(0x0000); 
+
+    uint16_t raw_data = ADS1118_WriteRead(0x0000);
     int16_t temp_reg = (int16_t)raw_data >> 2;
     return (float)temp_reg * 0.03125f;
 }
@@ -74,10 +74,10 @@ float ADS1118_GetVoltage_mV(void) {
 float ADS1118_CalibrateTemp(float raw_temp) {
     if (raw_temp <= cal_measured[0]) return cal_actual[0];
     if (raw_temp >= cal_measured[CAL_POINTS-1]) return cal_actual[CAL_POINTS-1];
-    
+
     for (int i = 0; i < CAL_POINTS - 1; i++) {
         if (raw_temp >= cal_measured[i] && raw_temp <= cal_measured[i+1]) {
-            return cal_actual[i] + (cal_actual[i+1] - cal_actual[i]) / 
+            return cal_actual[i] + (cal_actual[i+1] - cal_actual[i]) /
                    (cal_measured[i+1] - cal_measured[i]) * (raw_temp - cal_measured[i]);
         }
     }

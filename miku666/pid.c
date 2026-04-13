@@ -18,7 +18,7 @@ void PID_init(PID_struct* pid_info) {
 
 
 float PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_current) {
-	pid_info->v_target = value_thres+5; // 设定目标值  // 考虑到散热,额外加5度
+	pid_info->v_target = value_thres; // 设定目标值  // 考虑到散热,额外加5度
 	pid_info->v_current = value_current; // 设定当前值  // pid_T.v_current = (float)MAX6675_ReadTemperature();  // 设定当前值
 	// 误差值
 	pid_info->err = pid_info->v_target - pid_info->v_current;

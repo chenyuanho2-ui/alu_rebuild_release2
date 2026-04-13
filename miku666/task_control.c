@@ -80,8 +80,7 @@ void StartTask_Control(void const * argument)
         // 更新冷端补偿电压 (环境温度变化慢，200ms 刷新一次足够)
         Thermocouple_UpdateColdJunction();
 
-        // 释放 UI 刷新信号量
-        osSemaphoreRelease(alu_temperatureHandle);
+        // 【注意】：此处已将 osSemaphoreRelease(alu_temperatureHandle) 移除，放到下方独立的 UI 刷新区
 
         if (is_heating_active == 1) {
             // 构造 SD 卡记录数据
@@ -110,10 +109,23 @@ void StartTask_Control(void const * argument)
         }
 
         // 打印系统运行状态诊断信息
-        printf("[SYS %u] MaxCost:%ums\r\n", xTaskGetTickCount(), max_cost_in_200ms);
+//        printf("[SYS %u] MaxCost:%ums\r\n", xTaskGetTickCount(), max_cost_in_200ms);
+
+//        // 打印当前 PWM 输出比例
+//        printf("[PWM] Output: %.1f %%\r\n", pwm_percent * 100.0f);
+
+//        // 打印当前设定温度阈值
+//        printf("[SET] Target: %.1f C\r\n", temp_thres);
 
         // 重置最大耗时，为下一个 200ms 周期做准备
         max_cost_in_200ms = 0;
+    }
+
+    // ========== [1000ms UI 刷新专区] (每 100 个 10ms 节拍) ==========
+    // 降低释放频率，让图表横轴的时间与物理时间完美对齐
+    if (tick_10ms % 100 == 0) {
+        // 释放 UI 刷新信号量 (每秒 1 次)
+        osSemaphoreRelease(alu_temperatureHandle);
     }
 
     // ========== [2000ms 超低频区] (每 200 个 10ms 节拍) ==========
@@ -124,12 +136,12 @@ void StartTask_Control(void const * argument)
         uint32_t stack_gui  = uxTaskGetStackHighWaterMark((TaskHandle_t)defaultTaskHandle);
         uint32_t stack_sub  = uxTaskGetStackHighWaterMark((TaskHandle_t)aluSubProgressHandle);
 
-        printf("\r\n=== [SYS RAM Monitor] ===\r\n");
-        printf("Task_Control Free : %u Words\r\n", stack_ctrl);
-        printf("AluMain Free      : %u Words\r\n", stack_main);
-        printf("TouchGFX Free     : %u Words\r\n", stack_gui);
-        printf("aluSubProgress Free     : %u Words\r\n", stack_sub);
-        printf("=========================\r\n");
+//        printf("\r\n=== [SYS RAM Monitor] ===\r\n");
+//        printf("Task_Control Free : %u Words\r\n", stack_ctrl);
+//        printf("AluMain Free      : %u Words\r\n", stack_main);
+//        printf("TouchGFX Free     : %u Words\r\n", stack_gui);
+//        printf("aluSubProgress Free     : %u Words\r\n", stack_sub);
+//        printf("=========================\r\n");
     }
   }
 }

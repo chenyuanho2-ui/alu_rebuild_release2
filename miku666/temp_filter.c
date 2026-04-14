@@ -3,7 +3,7 @@
 #include "thermocouple.h"
 #include <stdio.h>
 
-// 静态私有变量11
+// 静态私有变量
 static float latest_avg_temp = 0.0f;     // 给 PID 用的滤波值
 
 // 滤波变量

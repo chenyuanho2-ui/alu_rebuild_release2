@@ -52,16 +52,20 @@ void StartTask_Control(void const * argument)
     // 10ms 高频区: 读取热电偶温度并进行滤波
     TempFilter_Process();
 
+    // 【修改】移至此处，保证非加热时温度不为0
+    K_Temperature = TempFilter_GetUIAvgTemp();
+
     // ========== [10ms 高频区 - 核心 PID 控制] ==========
     if (is_heating_active == 1) {
-        // 获取滤波后的温度
-        K_Temperature = TempFilter_GetUIAvgTemp();
         K_Temperature = K_Temperature + temp_modify;
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
 
         // 执行 PID 迭代计算 (dt = 0.01s)
         pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
+
+        // 【新增】加热状态下 10ms 高频打印纯数字
+        printf("%.2f\r\n", K_Temperature);
     }
 
     // 计算本轮耗时
@@ -71,9 +75,6 @@ void StartTask_Control(void const * argument)
     if (current_cost > max_cost_in_200ms) {
         max_cost_in_200ms = current_cost;
     }
-
-    // 极简高频打印（仅打印温度数字，减少串口阻塞时长）
-    printf("%.2f\r\n", K_Temperature);
 
     // ========== [200ms 低频区] (每 20 个 10ms 节拍) ==========
     if (tick_10ms % 20 == 0) {
@@ -104,6 +105,9 @@ void StartTask_Control(void const * argument)
             }
 
             heating_num_count++;
+        } else {
+            // 【新增】待机状态下 200ms 低频打印带标志位的温度
+            printf("%.2f(off)\r\n", K_Temperature);
         }
 
         // 打印系统运行状态诊断信息

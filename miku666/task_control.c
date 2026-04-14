@@ -12,7 +12,7 @@
 
 extern QueueHandle_t SDWriteQueueHandle;
 
-extern osSemaphoreId Sem_20msHandle;
+extern osSemaphoreId Sem_10msHandle;
 
 // ==========================================================
 // 【引入任务句柄】根据你 CubeMX 里的名字，严格对应！
@@ -42,7 +42,7 @@ void StartTask_Control(void const * argument)
   for(;;)
   {
     // 等待 10ms 定时器信号量 (TIM7)
-    osSemaphoreWait(Sem_20msHandle, osWaitForever);
+    osSemaphoreWait(Sem_10msHandle, osWaitForever);
 
     // 记录本轮起始时间
     start_tick = xTaskGetTickCount();
@@ -109,11 +109,11 @@ void StartTask_Control(void const * argument)
         // 打印系统运行状态诊断信息
 //        printf("[SYS %u] MaxCost:%ums\r\n", xTaskGetTickCount(), max_cost_in_200ms);
 
-        // 打印当前 PWM 输出比例
-        printf("[PWM] Output: %.1f %%\r\n", pwm_percent * 100.0f);
+//        // 打印当前 PWM 输出比例
+//        printf("[PWM] Output: %.1f %%\r\n", pwm_percent * 100.0f);
 
-        // 打印当前设定温度阈值
-        printf("[SET] Target: %.1f C\r\n", temp_thres);
+//        // 打印当前设定温度阈值
+//        printf("[SET] Target: %.1f C\r\n", temp_thres);
 
         // 重置最大耗时，为下一个 200ms 周期做准备
         max_cost_in_200ms = 0;

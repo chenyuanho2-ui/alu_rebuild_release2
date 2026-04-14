@@ -35,7 +35,7 @@ void TempFilter_Process(void) {
     }
 	
     // 3. 一阶低通滤波 (EMA) - 彻底消除 ADC 噪声且保持曲线连续
-    const float alpha = 0.2f; 
+    const float alpha = 0.6f; 
     if (filtered_val == -999.0f) filtered_val = cal_temp;
     filtered_val = alpha * cal_temp + (1.0f - alpha) * filtered_val;
     

@@ -17,6 +17,7 @@
 	* @email           : AluminiumOxide@163.com
 	* @SMA             : https://space.bilibili.com/87077691
   ******************************************************************************
+
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -40,7 +41,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "touch_800x480.h"
-
 #include "alu_file.h"
 #include "alu_temp.h"
 #include "temp_filter.h"  // 新增：引入双通道测温组件
@@ -80,7 +80,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern osSemaphoreId Sem_20msHandle;
+extern osSemaphoreId Sem_10msHandle;
 /* USER CODE END 0 */
 
 /**
@@ -137,8 +137,6 @@ int main(void)
   /* Call PreOsInit function */
   MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
-//	TIM1->CR2&=0X0000;
-//	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t *)Sine12bit, 32, DAC_ALIGN_12B_R);
 
 	HAL_TIM_Base_Start_IT(&htim7);
 	Touch_Init();				// 触摸屏初始化	
@@ -273,10 +271,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   /* USER CODE BEGIN Callback 1 */
   // ========================================================
-  // 【新加】：如果是 TIM7 进来的中断 (严格的 20ms 到了)
+  // 【新加】：如果是 TIM7 进来的中断 (严格的 10ms 到了)
   if (htim->Instance == TIM7) {
       // 释放信号量，把 Task_Control 任务叫醒去测温！
-      osSemaphoreRelease(Sem_20msHandle);
+      osSemaphoreRelease(Sem_10msHandle);
   }
   // ========================================================
 

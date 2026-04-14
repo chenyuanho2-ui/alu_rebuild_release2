@@ -59,8 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define btn_foot_Pin GPIO_PIN_4
 #define btn_foot_GPIO_Port GPIOD
-#define SPI2_CS_ADS_Pin GPIO_PIN_3
+#define SPI2_CS_ADS_Pin GPIO_PIN_6
 #define SPI2_CS_ADS_GPIO_Port GPIOD
+#define SPI2_CS_T_Pin GPIO_PIN_3
+#define SPI2_CS_T_GPIO_Port GPIOD
 #define SDIO_GND_Pin GPIO_PIN_14
 #define SDIO_GND_GPIO_Port GPIOH
 #define flag_485_Pin GPIO_PIN_7

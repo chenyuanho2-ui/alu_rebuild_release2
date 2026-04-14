@@ -65,7 +65,7 @@ osSemaphoreId alu_thresholdHandle;
 osSemaphoreId alu_screenHandle;
 osSemaphoreId alu_chooseHandle;
 osSemaphoreId alu_savenameHandle;
-osSemaphoreId Sem_20msHandle;
+osSemaphoreId Sem_10msHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -146,9 +146,9 @@ void MX_FREERTOS_Init(void) {
   osSemaphoreDef(alu_savename);
   alu_savenameHandle = osSemaphoreCreate(osSemaphore(alu_savename), 1);
 
-  /* definition and creation of Sem_20ms */
-  osSemaphoreDef(Sem_20ms);
-  Sem_20msHandle = osSemaphoreCreate(osSemaphore(Sem_20ms), 1);
+  /* definition and creation of Sem_10ms */
+  osSemaphoreDef(Sem_10ms);
+  Sem_10msHandle = osSemaphoreCreate(osSemaphore(Sem_10ms), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */

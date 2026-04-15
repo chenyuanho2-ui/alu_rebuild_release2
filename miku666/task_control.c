@@ -98,9 +98,13 @@ void StartTask_Control(void const * argument)
         }
     }
 
-    // 1000ms UI刷新
+    // 1000ms UI刷新 + 任务栈高水位打印
     if (tick_10ms % 100 == 0) {
         osSemaphoreRelease(alu_temperatureHandle);
+        printf("[STACK] aluMain:%u, Control:%u, SubProg:%u\r\n",
+               (unsigned int)uxTaskGetStackHighWaterMark(aluMainHandle),
+               (unsigned int)uxTaskGetStackHighWaterMark(Task_ControlHandle),
+               (unsigned int)uxTaskGetStackHighWaterMark(aluSubProgressHandle));
     }
   }
 }

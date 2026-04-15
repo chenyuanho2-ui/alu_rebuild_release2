@@ -116,12 +116,12 @@ void AluMain(void const * argument)
                       if (strcmp(uart_buf, "SET_PID") == 0 || strcmp(uart_buf, "set_pid") == 0) {
                           if (is_heating_active == 0 && pid_algorithm_type == 0) {
                               uart_pid_state = 1;
-                              printf("当前PID: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
-                              printf("请输入新参数(格式: x,y,z):\r\n");
+                              printf("Current PID: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
+                              printf("Enter new params (format: x,y,z):\r\n");
                           } else if (is_heating_active != 0) {
-                              printf("错误: 正在加热中，无法修改PID参数\r\n");
+                              printf("Error: Heating in progress, cannot modify PID\r\n");
                           } else {
-                              printf("错误: 当前不是普通PID模式\r\n");
+                              printf("Error: Not in normal PID mode\r\n");
                           }
                       }
                       break;
@@ -129,10 +129,10 @@ void AluMain(void const * argument)
                   case 1: {
                       if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
                           uart_pid_state = 2;
-                          printf("解析成功: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
-                          printf("确认修改请回复 Y，重新输入请回复 N\r\n");
+                          printf("Parsed: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
+                          printf("Confirm [Y], Re-enter [N]\r\n");
                       } else {
-                          printf("格式错误，请重新输入(格式: x,y,z):\r\n");
+                          printf("Format error, re-enter (format: x,y,z):\r\n");
                       }
                       break;
                   }
@@ -141,13 +141,13 @@ void AluMain(void const * argument)
                           pid_TEMP.Kp = temp_Kp;
                           pid_TEMP.Ki = temp_Ki;
                           pid_TEMP.Kd = temp_Kd;
-                          printf("修改成功，已退出修改模式\r\n");
+                          printf("Success, exiting config mode\r\n");
                           uart_pid_state = 0;
                       } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
-                          printf("已取消，请输入新参数(格式: x,y,z):\r\n");
+                          printf("Cancelled, enter new params (format: x,y,z):\r\n");
                           uart_pid_state = 1;
                       } else {
-                          printf("输入无效，请回复 Y 或 N\r\n");
+                          printf("Invalid input, reply Y or N\r\n");
                       }
                       break;
                   }

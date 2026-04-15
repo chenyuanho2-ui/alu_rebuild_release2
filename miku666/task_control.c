@@ -45,7 +45,9 @@ void StartTask_Control(void const * argument)
 
     // ========== [如果处于加热状态，执行控制] ==========
     if (is_heating_active == 1) {
-        printf("%.2f\r\n", K_Temperature);  // 10ms 打印温度（加热中）
+		
+//        printf("%.2f\r\n", K_Temperature);  // 10ms 打印温度（加热中）
+		
         K_Temperature = K_Temperature + temp_modify;
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;

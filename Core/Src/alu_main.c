@@ -4,104 +4,129 @@
 #include "usart.h"
 #include "tim.h"
 #include <stdio.h>
+#include <stdlib.h> // 【新增】用于 free() 函数释放内存
 #include <string.h>
 #include "FreeRTOS.h"
 #include "queue.h"
 
 extern QueueHandle_t SDWriteQueueHandle;
 
+double K_Temperature   = 0;        
+float  pwm_percent     = 0;        
+int    temp_modify     = 0;        
+float  temp_thres      = 60;	   
+float  power_thres     = 1.0;      
 
-double K_Temperature   = 0;        // 温度值
-float  pwm_percent     = 0;        // pwm占空比
-int    temp_modify     = 0;        // 温度偏移
-float  temp_thres      = 30;	   // 温度阈值
+int    index_screen    = 2;        
+int    index_choose    = 1;        
 
-float  power_thres     = 0;        // 功率阈值
+AluDynList sd_file_list;           
+int    num_file        = 0;        
 
-int    index_screen    = 2;        // 屏幕切换 0为SrcMain,1为Screen1, 2为launch
-int    index_choose    = 1;        // 0为设置温度阈值,1为设置功率阈值
+// ==========================================
+// 全局状态控制变量
+// ==========================================
+uint8_t need_stop_cleanup = 0;           // 清理信号
+volatile uint8_t is_heating_active = 0;  // 1:正在加热, 0:停止加热
+volatile uint32_t heating_num_count = 0; // 加热时间计数
+uint8_t sd_record_enable = 0;            // SD 记录开关：1=启用，0=禁用
+char current_file_name[32] = {0};        // 当前正在写入的CSV文件名
+PID_struct pid_TEMP;                     // 全局PID对象
 
-AluDynList sd_file_list;           // 动态文件列表
-int    num_file        = 0;        // 当前扫描到的文件数量
+// ==========================================
+// 收尾清理函数 (加入防卡死内存释放)
+// ==========================================
+void Heating_Stop_Routine(void) {
+    vTaskDelay(pdMS_TO_TICKS(500)); // 等待队列最后一点数据安全写完
+    
+    // 【核心修复：彻底消灭内存泄露！】
+    // 释放上一次 SD 卡扫描分配的动态内存，防止第二次运行榨干单片机 RAM
+    if (sd_file_list.items != NULL) {
+        for (int i = 0; i < sd_file_list.size; i++) {
+            if (sd_file_list.items[i] != NULL) {
+                free(sd_file_list.items[i]); // 释放每个文件名占用的内存
+            }
+        }
+        free(sd_file_list.items);            // 释放列表数组本身的内存
+    }
+    
+    // 释放干净后，再重新初始化并分配新内存
+    Alu_list_init(&sd_file_list);
+    Alu_sniff_files(&sd_file_list, "/"); // 重新扫描 SD 卡更新列表
+    
+    index_screen = 0;
+    osSemaphoreRelease(alu_screenHandle); // 切回主屏幕
+    vTaskDelay(pdMS_TO_TICKS(500));
+}
 
-// ==========================================================
-// 按键与 UI 逻辑主任务 (覆盖 freertos.c 中的 __weak 空函数)
-// ==========================================================
 void AluMain(void const * argument)
 {
-  // 1. 485芯片的使能脚,默认关闭接收和发送
   HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_SET);
   uint8_t alu_485_send[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
   HAL_UART_Transmit(&huart4,(uint8_t*)alu_485_send,10,0xFFFF);
   HAL_GPIO_WritePin(flag_485_GPIO_Port,flag_485_Pin,GPIO_PIN_RESET);
   
-  // 2. 开启 PWM 输出
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1); // 0~999
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1);
   
-  // 3. 初始化文件列表
   Alu_list_init(&sd_file_list);  
-  Alu_sniff_files(&sd_file_list,"/"); // 扫描根目录
-  for (int i = 0; i < sd_file_list.size; i++) {
-      printf("File %d: %s\n", i+1, sd_file_list.items[i]);
-  }
+  Alu_sniff_files(&sd_file_list,"/"); 
 
-  int num_file = Alu_SD_csv_num("/") + 1; // 扫描根目录下的文件数
-  printf("num_file %d\n",num_file);
+  num_file = Alu_SD_csv_num("/") + 1; 
   
-  // 4. 创建 SD 卡写入队列
   if (SDWriteQueueHandle == NULL) {
-      SDWriteQueueHandle = xQueueCreate(10, 64);
+      SDWriteQueueHandle = xQueueCreate(20, 64); // 创建SD卡异步写入队列
   }
   
   vTaskDelay(pdMS_TO_TICKS(1000));
   index_screen = 0;
-  osSemaphoreRelease(alu_screenHandle);  // 释放屏幕切换信号量资源,切换到SrcMain
+  osSemaphoreRelease(alu_screenHandle);
   
-  long btns_statu = 0;  // 按键状态  
-  char recv_buf[64]; // 接收缓冲区
+  long btns_statu = 0;  
+  char recv_buf[64]; 
   
-  /* Infinite loop */
   for(;;)
   {
-      // 后台慢慢处理 SD 卡写入请求
-      // timeout 设为 0 表示快速轮询，不挂起当前 UI 任务
-		if (SDWriteQueueHandle != NULL) {
-			// 把 if 改成 while，一口气把队列里积压的数据全写进SD卡
-			while (xQueueReceive(SDWriteQueueHandle, recv_buf, 0) == pdTRUE) {
-				Alu_SD_write((uint8_t*)recv_buf, strlen(recv_buf), (const char *)file_name_cache);
-			}
-		}
-      
-      btns_statu = btn_sniff_pressed();
-      
-      if (btns_statu>0){
-          printf("btn pressed %ld\n", btns_statu);
+      // 1. 后台极速处理 SD 卡写入请求 (绝对不卡主循环)
+      if (SDWriteQueueHandle != NULL) {
+          while (xQueueReceive(SDWriteQueueHandle, recv_buf, 0) == pdTRUE) {
+              Alu_SD_write((uint8_t*)recv_buf, strlen(recv_buf), current_file_name);
+          }
       }
-      
+
+      // 2. 检测到松开脚踏的清理信号，安全收尾
+      if (need_stop_cleanup == 1) {
+          need_stop_cleanup = 0;
+          Heating_Stop_Routine();
+      }
+
+      // 3. 扫描按键
+      btns_statu = btn_sniff_pressed();
+
       switch (btns_statu) {
-          case 1: // 按键1
+          case 1: 
               index_choose = active_key_1(index_choose); 
               break;
-          case 2: // 按键2 增加阈值  
+          case 2: 
               active_key_2(index_choose, &temp_thres, &power_thres);   
               break;
-          case 4: // 按键3 减少阈值
+          case 4: 
               active_key_3(index_choose, &temp_thres, &power_thres);   
               break;
-          case 8: // 按键4 发送实际参数
+          case 8: 
               active_key_4(&huart4, &htim1, alu_485_send, power_thres);
               break;
-          case (1+8): // 按键1+4 温度偏移
+          case (1+8): 
               active_key_1vs4(&temp_modify);
               break;
-          case 16: // 脚踏
-              // 踩下脚踏只会瞬间发信号点火，绝不死锁当前任务！
-              active_key_foot(alu_485_send, temp_thres, power_thres);
+          case 16: // 脚踏踩下
+              // 必须在未加热状态下踩下才有效，防止重复触发
+              if (is_heating_active == 0) {
+                  active_key_foot_start(alu_485_send, temp_thres, power_thres);
+              }
               break;  
       }
       
-      // 规规矩矩的 50ms 按键消抖延时
       vTaskDelay(pdMS_TO_TICKS(50));
   }
 }

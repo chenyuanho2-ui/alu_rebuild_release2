@@ -4,8 +4,8 @@
 #include <gui_generated/scrmain_screen/ScrMainViewBase.hpp>
 #include <gui/scrmain_screen/ScrMainPresenter.hpp>
 
-#include <touchgfx/Color.hpp>              // ÔÚscrmainviewbase.cppÀï¸´ÖÆµÄ,¿ØÖÆÔªËØÑÕÉ«
-#include <gui/containers/FileNameCnt.hpp>  // ÒýÈëµ¥ÎÄ¼þÈÝÆ÷
+#include <touchgfx/Color.hpp>              // ï¿½ï¿½scrmainviewbase.cppï¿½ï¸´ï¿½Æµï¿½,ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½ï¿½ï¿½É«
+#include <gui/containers/FileNameCnt.hpp>  // ï¿½ï¿½ï¿½ëµ¥ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 	
 class ScrMainView : public ScrMainViewBase
 {
@@ -18,13 +18,18 @@ public:
 	virtual void alu_change_choose(int index_choose);
 	virtual void alu_change_thres(int index_choose,float temp_thres,float power_thres);
 		
-	FileNameCnt listElements[1024];                   // ÎÄ¼þÈÝÆ÷ÊµÀý»¯
+	FileNameCnt listElements[1024];                   // ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½
 		
 
-    void listCntClick(FileNameCnt& element);                   // »Øµ÷º¯Êý½ÓÊÖ
-	Callback<ScrMainView, FileNameCnt&> listCntClickCallback;  // »Øµ÷º¯Êý
+    void listCntClick(FileNameCnt& element);
+	Callback<ScrMainView, FileNameCnt&> listCntClickCallback;
+
+	virtual void btnAddClicked(const touchgfx::AbstractButton& src);
+	virtual void btnDecClicked(const touchgfx::AbstractButton& src);
+	Callback<ScrMainView, const touchgfx::AbstractButton&> btnAddThresCallback;
+	Callback<ScrMainView, const touchgfx::AbstractButton&> btnDecThresCallback;
 protected:
-//	static const int numberOfFileNameCnt = 10;      // ´«ÈëÎÄ¼þ¸öÊý
+//	static const int numberOfFileNameCnt = 10;      // ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
     
 };
 

@@ -168,6 +168,7 @@
 ".\alu_rebuild\task_control.o"
 ".\alu_rebuild\ui_task.o"
 ".\alu_rebuild\pid.o"
+".\alu_rebuild\pid_storage.o"
 --nodebug --strict --scatter ".\alu_rebuild\alu_rebuild.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

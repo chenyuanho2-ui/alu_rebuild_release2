@@ -1550,6 +1550,11 @@
               <FileType>1</FileType>
               <FilePath>..\miku666\pid.c</FilePath>
             </File>
+            <File>
+              <FileName>pid_storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\miku666\pid_storage.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -3,6 +3,7 @@
 #include "alu_file.h"
 #include "usart.h"
 #include "tim.h"
+#include "pid_storage.h"
 #include <stdio.h>
 #include <stdlib.h> // 【新增】用于 free() 函数释放内存
 #include <string.h>
@@ -33,7 +34,7 @@ int    num_file        = 0;
 uint8_t need_stop_cleanup = 0;           // 清理信号
 volatile uint8_t is_heating_active = 0;  // 1:正在加热, 0:停止加热
 volatile uint32_t heating_num_count = 0; // 加热时间计数
-uint8_t sd_record_enable = 0;            // SD 记录开关：1=启用，0=禁用
+uint8_t sd_record_enable = 1;            // SD 记录开关：1=启用，0=禁用
 char current_file_name[32] = {0};        // 当前正在写入的CSV文件名
 PID_struct pid_TEMP;                     // 全局PID对象
 
@@ -81,7 +82,9 @@ void AluMain(void const * argument)
   if (SDWriteQueueHandle == NULL) {
       SDWriteQueueHandle = xQueueCreate(20, 64); // 创建SD卡异步写入队列
   }
-  
+
+  SD_Load_PID_Config();
+
   vTaskDelay(pdMS_TO_TICKS(1000));
   index_screen = 0;
   osSemaphoreRelease(alu_screenHandle);
@@ -141,6 +144,7 @@ void AluMain(void const * argument)
                           pid_TEMP.Kp = temp_Kp;
                           pid_TEMP.Ki = temp_Ki;
                           pid_TEMP.Kd = temp_Kd;
+                          SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
                           printf("Success, exiting config mode\r\n");
                           uart_pid_state = 0;
                       } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {

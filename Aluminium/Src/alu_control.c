@@ -146,6 +146,14 @@ int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres
 	data_485[6] = (uint8_t)(power_thres * 10);
 	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6]; 
 	data_485[7] = xorResult;
+	
+	// 【新增】打印 RS485 发送的开启指令 (16进制格式)
+    printf("RS485 TX(Start): ");
+    for(int i = 0; i < 10; i++) {
+        printf("%02X ", data_485[i]);
+    }
+    printf("\r\n");
+	
 	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
 	HAL_UART_Transmit(&huart4, (uint8_t*)data_485, 10, 0xFFFF);  
 	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);

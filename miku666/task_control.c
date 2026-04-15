@@ -77,7 +77,16 @@ void StartTask_Control(void const * argument)
                     // 瞬间关停 485 硬件
                     HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
                     uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
-                    extern UART_HandleTypeDef huart4;
+                    
+					// 【新增】打印 RS485 发送的停止指令 (16进制格式)
+                    printf("RS485 TX(Stop): ");
+                    for(int i = 0; i < 10; i++) {
+                        printf("%02X ", alu_485_off[i]);
+                    }
+                    printf("\r\n");
+					
+					
+					extern UART_HandleTypeDef huart4;
                     HAL_UART_Transmit(&huart4, alu_485_off, 10, 100);
                     HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
 
@@ -88,7 +97,7 @@ void StartTask_Control(void const * argument)
             }
             heating_num_count++;
         } else {
-            printf("%.2f(off)\r\n", K_Temperature);  // 200ms 打印温度（待机）
+//            printf("%.2f(off)\r\n", K_Temperature);  // 200ms 打印温度（待机）
         }
     }
 

@@ -52,3 +52,7 @@ float PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_cur
 		return 1;
 	}
 }
+
+float Fuzzy_PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_current) {
+	return PID_PWM_iteration(pid_info, value_thres, value_current);
+}

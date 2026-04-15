@@ -26,6 +26,7 @@ extern PID_struct pid_TEMP;
 // 暴露给外部的任务接口
 void PID_init(PID_struct* pid_info);
 float PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_current);
+float Fuzzy_PID_PWM_iteration(PID_struct* pid_info, float value_thres, float value_current);
 
 #ifdef __cplusplus
 }

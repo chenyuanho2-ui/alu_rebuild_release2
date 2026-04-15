@@ -28,6 +28,8 @@ extern volatile uint8_t is_heating_active;
 extern volatile uint32_t heating_num_count;
 extern uint8_t sd_record_enable;  // SD 记录开关
 extern PID_struct pid_TEMP;
+extern uint8_t uart_pid_state;
+extern uint8_t pid_algorithm_type;
 
 void StartTask_Control(void const * argument)
 {
@@ -45,14 +47,15 @@ void StartTask_Control(void const * argument)
 
     // ========== [如果处于加热状态，执行控制] ==========
     if (is_heating_active == 1) {
-		
-//        printf("%.2f\r\n", K_Temperature);  // 10ms 打印温度（加热中）
-		
         K_Temperature = K_Temperature + temp_modify;
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
 
-        pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
+        if (pid_algorithm_type == 0) {
+            pwm_percent = PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
+        } else {
+            pwm_percent = Fuzzy_PID_PWM_iteration(&pid_TEMP, temp_thres, K_Temperature) / 1000;
+        }
     }
 
     // ========== [200ms 低频区处理队列和按键] ==========
@@ -71,22 +74,14 @@ void StartTask_Control(void const * argument)
             }
 
             // 【关键】：检测到松开脚踏，瞬间切断！
-            if (heating_num_count > 2)
+            if (heating_num_count > 2) 
             {
                 if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 0) {
                     is_heating_active = 0; // 停止PID
 
                     // 瞬间关停 485 硬件
                     HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
-                    uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
-                    
-					// 【新增】打印 RS485 发送的停止指令 (16进制格式)
-                    printf("RS485 TX(Stop): ");
-                    for(int i = 0; i < 10; i++) {
-                        printf("%02X ", alu_485_off[i]);
-                    }
-                    printf("\r\n");
-					
+                    uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};		
 					
 					extern UART_HandleTypeDef huart4;
                     HAL_UART_Transmit(&huart4, alu_485_off, 10, 100);
@@ -98,8 +93,8 @@ void StartTask_Control(void const * argument)
                 }
             }
             heating_num_count++;
-        } else {
-//            printf("%.2f(off)\r\n", K_Temperature);  // 200ms 打印温度（待机）
+        } else if (uart_pid_state == 0) {
+           printf("%.2f(off)\r\n", K_Temperature);  // 200ms 打印温度（待机）
         }
     }
 

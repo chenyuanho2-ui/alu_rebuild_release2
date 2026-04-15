@@ -10,6 +10,10 @@
 #include "queue.h"
 
 extern QueueHandle_t SDWriteQueueHandle;
+extern uint8_t uart_pid_state;
+extern uint8_t pid_algorithm_type;
+extern float temp_Kp, temp_Ki, temp_Kd;
+extern QueueHandle_t UartRxQueue;
 
 double K_Temperature   = 0;        
 float  pwm_percent     = 0;        
@@ -100,7 +104,60 @@ void AluMain(void const * argument)
           Heating_Stop_Routine();
       }
 
-      // 3. 扫描按键
+      // 3. 处理串口接收（从环形FIFO读取数据发送到队列）
+      Uart_Process_Rx();
+
+      // 4. 串口PID交互状态机处理
+      if (UartRxQueue != NULL) {
+          char uart_buf[64] = {0};
+          if (xQueueReceive(UartRxQueue, uart_buf, 0) == pdTRUE) {
+              switch (uart_pid_state) {
+                  case 0: {
+                      if (strcmp(uart_buf, "SET_PID") == 0 || strcmp(uart_buf, "set_pid") == 0) {
+                          if (is_heating_active == 0 && pid_algorithm_type == 0) {
+                              uart_pid_state = 1;
+                              printf("当前PID: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
+                              printf("请输入新参数(格式: x,y,z):\r\n");
+                          } else if (is_heating_active != 0) {
+                              printf("错误: 正在加热中，无法修改PID参数\r\n");
+                          } else {
+                              printf("错误: 当前不是普通PID模式\r\n");
+                          }
+                      }
+                      break;
+                  }
+                  case 1: {
+                      if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
+                          uart_pid_state = 2;
+                          printf("解析成功: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
+                          printf("确认修改请回复 Y，重新输入请回复 N\r\n");
+                      } else {
+                          printf("格式错误，请重新输入(格式: x,y,z):\r\n");
+                      }
+                      break;
+                  }
+                  case 2: {
+                      if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                          pid_TEMP.Kp = temp_Kp;
+                          pid_TEMP.Ki = temp_Ki;
+                          pid_TEMP.Kd = temp_Kd;
+                          printf("修改成功，已退出修改模式\r\n");
+                          uart_pid_state = 0;
+                      } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                          printf("已取消，请输入新参数(格式: x,y,z):\r\n");
+                          uart_pid_state = 1;
+                      } else {
+                          printf("输入无效，请回复 Y 或 N\r\n");
+                      }
+                      break;
+                  }
+                  default:
+                      break;
+              }
+          }
+      }
+
+      // 4. 扫描按键
       btns_statu = btn_sniff_pressed();
 
       switch (btns_statu) {

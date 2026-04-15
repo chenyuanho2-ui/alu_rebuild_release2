@@ -44,7 +44,8 @@ void MX_UART4_Init(void);
 void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void Uart_Ringbuf_Init(void);
+void Uart_Process_Rx(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

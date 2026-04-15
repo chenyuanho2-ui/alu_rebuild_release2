@@ -19,9 +19,18 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
+#include "FreeRTOS.h"
+#include "queue.h"
 
 /* USER CODE BEGIN 0 */
+#define UART_RX_RING_SIZE 64
 
+extern QueueHandle_t UartRxQueue;
+
+static uint8_t uart_rx_byte;
+static uint8_t uart_rx_ring[UART_RX_RING_SIZE];
+static volatile uint16_t uart_rx_head = 0;
+static volatile uint16_t uart_rx_tail = 0;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;
@@ -110,7 +119,8 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
+  Uart_Ringbuf_Init();
+  HAL_UART_Receive_IT(&huart1, &uart_rx_byte, 1);
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -184,6 +194,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* USART1 interrupt Init */
+    HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
 
   /* USER CODE END USART1_MspInit 1 */
@@ -225,6 +238,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_10|GPIO_PIN_9);
 
+    /* USART1 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspDeInit 1 */
 
   /* USER CODE END USART1_MspDeInit 1 */
@@ -232,30 +247,88 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-// AC5������ʹ����δ���
-
-#pragma import(__use_no_semihosting)  
-int _ttywrch(int ch)    
+#pragma import(__use_no_semihosting)
+int _ttywrch(int ch)
 {
     ch=ch;
 	return ch;
-}         
-struct __FILE 
-{ 
-	int handle; 
+}
+struct __FILE
+{
+	int handle;
+};
+FILE __stdout;
 
-}; 
-FILE __stdout;       
-
-void _sys_exit(int x) 
-{ 
-	x = x; 
-} 
+void _sys_exit(int x)
+{
+	x = x;
+}
 
 int fputc(int ch, FILE *f)
 {
-	HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 100);	// ���͵��ֽ�����
+	HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 100);
 	return (ch);
 }
 
+void Uart_Ringbuf_Init(void) {
+    uart_rx_head = 0;
+    uart_rx_tail = 0;
+}
+
+uint8_t Uart_Ringbuf_Available(void) {
+    if (uart_rx_head >= uart_rx_tail) {
+        return uart_rx_head - uart_rx_tail;
+    } else {
+        return UART_RX_RING_SIZE - uart_rx_tail + uart_rx_head;
+    }
+}
+
+uint8_t Uart_Ringbuf_ReadByte(void) {
+    uint8_t c = 0;
+    if (uart_rx_tail != uart_rx_head) {
+        c = uart_rx_ring[uart_rx_tail];
+        uart_rx_tail = (uart_rx_tail + 1) % UART_RX_RING_SIZE;
+    }
+    return c;
+}
+
+uint8_t Uart_Ringbuf_ReadLine(uint8_t *dest, uint16_t max_len) {
+    uint16_t count = 0;
+    while (uart_rx_tail != uart_rx_head && count < max_len - 1) {
+        uint8_t c = uart_rx_ring[uart_rx_tail];
+        uart_rx_tail = (uart_rx_tail + 1) % UART_RX_RING_SIZE;
+        if (c == '\n' || c == '\r') {
+            if (count > 0) break;
+        } else {
+            dest[count++] = c;
+        }
+    }
+    dest[count] = '\0';
+    return count;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART1) {
+        uint16_t next = (uart_rx_head + 1) % UART_RX_RING_SIZE;
+        if (next != uart_rx_tail) {
+            uart_rx_ring[uart_rx_head] = uart_rx_byte;
+            uart_rx_head = next;
+        }
+        HAL_UART_Receive_IT(huart, &uart_rx_byte, 1);
+    }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART1) {
+        HAL_UART_Receive_IT(huart, &uart_rx_byte, 1);
+    }
+}
+
+void Uart_Process_Rx(void) {
+    static uint8_t line_buf[64];
+    uint8_t len = Uart_Ringbuf_ReadLine(line_buf, 64);
+    if (len > 0 && UartRxQueue != NULL) {
+        xQueueSend(UartRxQueue, line_buf, 0);
+    }
+}
 /* USER CODE END 1 */

@@ -133,8 +133,15 @@ extern int    temp_modify;
 extern volatile uint8_t is_heating_active;
 extern volatile uint32_t heating_num_count;
 extern char current_file_name[32];
-extern uint8_t sd_record_enable;
 extern PID_struct pid_TEMP;
+
+// ==========================================
+// 串口PID交互新增全局变量定义
+// ==========================================
+QueueHandle_t UartRxQueue = NULL;
+uint8_t pid_algorithm_type = 0;
+uint8_t uart_pid_state = 0;
+float temp_Kp = 0.0f, temp_Ki = 0.0f, temp_Kd = 0.0f;
 
 // ====================================================================
 // 【重构】：脚踏瞬间启动函数 (纯非阻塞启动模式)
@@ -147,33 +154,25 @@ int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres
 	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6]; 
 	data_485[7] = xorResult;
 	
-	// 【新增】打印 RS485 发送的开启指令 (16进制格式)
-    printf("RS485 TX(Start): ");
-    for(int i = 0; i < 10; i++) {
-        printf("%02X ", data_485[i]);
-    }
-    printf("\r\n");
-	
 	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
 	HAL_UART_Transmit(&huart4, (uint8_t*)data_485, 10, 0xFFFF);  
 	HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
 	
 	// 2. 通知系统切换到屏幕1 (加热图表界面)
 	index_screen = 1;
-	osSemaphoreRelease(alu_screenHandle);
-
-	// 3 & 4. 【新增拦截】仅当 SD 记录开关打开时，才创建文件并写入表头
-	if (sd_record_enable == 1) {
-		num_file = Alu_SD_csv_num("/") + 1;
-		sprintf(current_file_name, "data_%d.csv", num_file);
-
-		uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
-		Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
-	}
-
+	osSemaphoreRelease(alu_screenHandle);  
+	
+	// 3. 创建本次加热的全新 CSV 数据文件
+	num_file = Alu_SD_csv_num("/") + 1; 
+	sprintf(current_file_name, "data_%d.csv", num_file);  
+	
 	// 通知 UI 刷新当前阈值
 	osSemaphoreRelease(alu_thresholdHandle);
-
+	
+	// 4. 写入 CSV 的第一行表头
+	uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
+	Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
+    
 	// 5. 初始化并清空 PID 历史数据
 	PID_init(&pid_TEMP);
 	

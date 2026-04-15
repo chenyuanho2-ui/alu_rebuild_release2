@@ -28,7 +28,7 @@ void ScrMainView::setupScreen()
 	
 	listLayout1.setHeight(0);
 	for (int i = 0; i < sd_file_list.size; i++) {
-		printf("File %d: %s\n", i+1, sd_file_list.items[i]);
+		//printf("File %d: %s\n", i+1, sd_file_list.items[i]);
 		listElements[i].add_list(sd_file_list.items[i],i);
 		listElements[i].setAction(listCntClickCallback);  // �ص�����
 		listLayout1.add(listElements[i]);

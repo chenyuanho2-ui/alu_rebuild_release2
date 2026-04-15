@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\alu_rebuild\alu_rebuild.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\alu_rebuild\alu_rebuild.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Wed Apr 15 10:53:34 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Wed Apr 15 11:26:01 2026
 <BR><P>
 <H3>Maximum Stack Usage =          0 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1938,7 +1938,8 @@ Global Symbols
 <P><STRONG><a name="[285]"></a>free</STRONG> (Thumb, 78 bytes, Stack size 0 bytes, h1_free.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[283]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_heap_descriptor
 </UL>
-<BR>[Called By]<UL><LI><a href="#[2d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Heating_Stop_Routine
+<BR>[Called By]<UL><LI><a href="#[2cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Alu_SD_csv_num
+<LI><a href="#[2d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Heating_Stop_Routine
 <LI><a href="#[286]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;realloc
 <LI><a href="#[29c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__Heap_ProvideMemory
 <LI><a href="#[275]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__cxa_finalize
@@ -1960,9 +1961,8 @@ Global Symbols
 <P><STRONG><a name="[288]"></a>__2printf</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, noretval__2printf.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[289]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
-<BR>[Called By]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ScrMainView::setupScreen()
-<LI><a href="#[2e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Alu_SD_del_file
-<LI><a href="#[42c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Model::alu_do_back_delFile(int, const char*)
+<BR>[Called By]<UL><LI><a href="#[42c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Model::alu_do_back_delFile(int, const char*)
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
 </UL>
 
 <P><STRONG><a name="[28a]"></a>__2sprintf</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, noretval__2sprintf.o(.text))
@@ -2570,7 +2570,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
-<P><STRONG><a name="[2cc]"></a>Alu_SD_csv_num</STRONG> (Thumb, 116 bytes, Stack size 0 bytes, alu_file.o(i.Alu_SD_csv_num))
+<P><STRONG><a name="[2cc]"></a>Alu_SD_csv_num</STRONG> (Thumb, 126 bytes, Stack size 0 bytes, alu_file.o(i.Alu_SD_csv_num))
 <BR><BR>[Calls]<UL><LI><a href="#[2dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_readdir
 <LI><a href="#[2db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_opendir
 <LI><a href="#[2e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_closedir
@@ -2578,16 +2578,16 @@ Global Symbols
 <LI><a href="#[2df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Alu_strcopy
 <LI><a href="#[2dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strrchr
 <LI><a href="#[290]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
+<LI><a href="#[285]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 <BR>[Called By]<UL><LI><a href="#[2da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;active_key_foot_start
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AluMain
 </UL>
 
-<P><STRONG><a name="[2e1]"></a>Alu_SD_del_file</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, alu_file.o(i.Alu_SD_del_file))
+<P><STRONG><a name="[2e1]"></a>Alu_SD_del_file</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, alu_file.o(i.Alu_SD_del_file))
 <BR><BR>[Calls]<UL><LI><a href="#[2e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_unlink
 <LI><a href="#[2e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_open
 <LI><a href="#[2e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_close
-<LI><a href="#[288]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[42c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Model::alu_do_back_delFile(int, const char*)
 </UL>
@@ -4037,7 +4037,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sd_diskio.o(.constdata)
 </UL>
-<P><STRONG><a name="[db]"></a>StartTask_Control</STRONG> (Thumb, 370 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
+<P><STRONG><a name="[db]"></a>StartTask_Control</STRONG> (Thumb, 396 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
 <BR><BR>[Calls]<UL><LI><a href="#[2ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 <LI><a href="#[2cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreRelease
 <LI><a href="#[2c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -4051,6 +4051,7 @@ Global Symbols
 <LI><a href="#[3c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_Init
 <LI><a href="#[312]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[28a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
+<LI><a href="#[288]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.constdata)
 </UL>
@@ -4337,7 +4338,7 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> filenamecnt.o(.constdata__ZTV11FileNameCnt)
 <LI> scrmainview.o(i._ZN11ScrMainViewD1Ev)
 </UL>
-<P><STRONG><a name="[105]"></a>ScrMainView::setupScreen()</STRONG> (Thumb, 276 bytes, Stack size 0 bytes, scrmainview.o(i._ZN11ScrMainView11setupScreenEv))
+<P><STRONG><a name="[105]"></a>ScrMainView::setupScreen()</STRONG> (Thumb, 262 bytes, Stack size 0 bytes, scrmainview.o(i._ZN11ScrMainView11setupScreenEv))
 <BR><BR>[Calls]<UL><LI><a href="#[2cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Alu_sniff_files
 <LI><a href="#[2ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Alu_list_init
 <LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::ListLayout::add(touchgfx::Drawable&)
@@ -4348,7 +4349,6 @@ Global Symbols
 <LI><a href="#[3e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextArea::resizeToCurrentText()
 <LI><a href="#[3e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FileNameCnt::setAction(touchgfx::GenericCallback&lang;FileNameCnt&, void, void&rang;&)
 <LI><a href="#[3e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FileNameCnt::add_list(const char*, int)
-<LI><a href="#[288]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> scrmainview.o(.constdata__ZTV11ScrMainView)
 </UL>
@@ -5592,8 +5592,8 @@ Global Symbols
 <P><STRONG><a name="[ad]"></a>touchgfx::GeneratedFont::~GeneratedFont()</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, generatedfont.o(i._ZN8touchgfx13GeneratedFontD1Ev))
 <BR>[Address Reference Count : 6]<UL><LI> generatedfont.o(.constdata__ZTVN8touchgfx13GeneratedFontE)
 <LI> table_times_10_4bpp.o(i._Z21getFont_times_10_4bppv)
-<LI> table_adobeheitistd_regular_otf_40_4bpp.o(i._Z41getFont_AdobeHeitiStd_Regular_otf_40_4bppv)
 <LI> table_verdana_20_4bpp.o(i._Z23getFont_verdana_20_4bppv)
+<LI> table_adobeheitistd_regular_otf_40_4bpp.o(i._Z41getFont_AdobeHeitiStd_Regular_otf_40_4bppv)
 <LI> table_verdana_40_4bpp.o(i._Z23getFont_verdana_40_4bppv)
 <LI> table_adobeheitistd_regular_otf_30_4bpp.o(i._Z41getFont_AdobeHeitiStd_Regular_otf_30_4bppv)
 </UL>
@@ -6885,24 +6885,24 @@ Global Symbols
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[149]"></a>touchgfx::Screen::tearDownScreen()</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, screen1viewbase.o(i._ZN8touchgfx6Screen14tearDownScreenEv))
-<BR>[Address Reference Count : 4]<UL><LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
+<BR>[Address Reference Count : 4]<UL><LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
+<LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[106]"></a>touchgfx::Screen::afterTransition()</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, screen1view.o(i._ZN8touchgfx6Screen15afterTransitionEv))
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[109]"></a>touchgfx::Screen::handleDragEvent(const touchgfx::DragEvent&)</STRONG> (Thumb, 200 bytes, Stack size 0 bytes, screen.o(i._ZN8touchgfx6Screen15handleDragEventERKNS_9DragEventE))
@@ -6913,9 +6913,9 @@ Global Symbols
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[10b]"></a>touchgfx::Screen::handleTickEvent()</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, screen1view.o(i._ZN8touchgfx6Screen15handleTickEventEv))
@@ -6933,9 +6933,9 @@ Global Symbols
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[10a]"></a>touchgfx::Screen::handleGestureEvent(const touchgfx::GestureEvent&)</STRONG> (Thumb, 82 bytes, Stack size 0 bytes, screen.o(i._ZN8touchgfx6Screen18handleGestureEventERKNS_12GestureEventE))
@@ -6944,9 +6944,9 @@ Global Symbols
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[419]"></a>touchgfx::Screen::add(touchgfx::Drawable&)</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, screen1viewbase.o(i._ZN8touchgfx6Screen3addERNS_8DrawableE))
@@ -6966,9 +6966,9 @@ Global Symbols
 <BR>[Address Reference Count : 7]<UL><LI> scrlaunchview.o(.constdata__ZTV13ScrLaunchView)
 <LI> screen1view.o(.constdata__ZTV11Screen1View)
 <LI> scrmainview.o(.constdata__ZTV11ScrMainView)
+<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen1viewbase.o(.constdata__ZTV15Screen1ViewBase)
 <LI> scrmainviewbase.o(.constdata__ZTV15ScrMainViewBase)
-<LI> scrlaunchviewbase.o(.constdata__ZTV17ScrLaunchViewBase)
 <LI> screen.o(.constdata__ZTVN8touchgfx6ScreenE)
 </UL>
 <P><STRONG><a name="[469]"></a>touchgfx::Screen::draw()</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, screen.o(i._ZN8touchgfx6Screen4drawEv))
@@ -10118,7 +10118,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AluMain
 </UL>
 
-<P><STRONG><a name="[2da]"></a>active_key_foot_start</STRONG> (Thumb, 162 bytes, Stack size 0 bytes, alu_control.o(i.active_key_foot_start))
+<P><STRONG><a name="[2da]"></a>active_key_foot_start</STRONG> (Thumb, 170 bytes, Stack size 0 bytes, alu_control.o(i.active_key_foot_start))
 <BR><BR>[Calls]<UL><LI><a href="#[2cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreRelease
 <LI><a href="#[2c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[2c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin

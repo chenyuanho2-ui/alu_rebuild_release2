@@ -133,6 +133,7 @@ extern int    temp_modify;
 extern volatile uint8_t is_heating_active;
 extern volatile uint32_t heating_num_count;
 extern char current_file_name[32];
+extern uint8_t sd_record_enable;
 extern PID_struct pid_TEMP;
 
 // ====================================================================
@@ -151,19 +152,20 @@ int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres
 	
 	// 2. 通知系统切换到屏幕1 (加热图表界面)
 	index_screen = 1;
-	osSemaphoreRelease(alu_screenHandle);  
-	
-	// 3. 创建本次加热的全新 CSV 数据文件
-	num_file = Alu_SD_csv_num("/") + 1; 
-	sprintf(current_file_name, "data_%d.csv", num_file);  
-	
+	osSemaphoreRelease(alu_screenHandle);
+
+	// 3 & 4. 【新增拦截】仅当 SD 记录开关打开时，才创建文件并写入表头
+	if (sd_record_enable == 1) {
+		num_file = Alu_SD_csv_num("/") + 1;
+		sprintf(current_file_name, "data_%d.csv", num_file);
+
+		uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
+		Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
+	}
+
 	// 通知 UI 刷新当前阈值
 	osSemaphoreRelease(alu_thresholdHandle);
-	
-	// 4. 写入 CSV 的第一行表头
-	uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
-	Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
-    
+
 	// 5. 初始化并清空 PID 历史数据
 	PID_init(&pid_TEMP);
 	

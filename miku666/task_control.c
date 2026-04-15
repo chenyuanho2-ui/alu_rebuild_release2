@@ -45,6 +45,7 @@ void StartTask_Control(void const * argument)
 
     // ========== [如果处于加热状态，执行控制] ==========
     if (is_heating_active == 1) {
+        printf("%.2f\r\n", K_Temperature);  // 10ms 打印温度（加热中）
         K_Temperature = K_Temperature + temp_modify;
         if (K_Temperature >= 150) K_Temperature = 150;
         else if (K_Temperature <= 0) K_Temperature = 0;
@@ -68,7 +69,7 @@ void StartTask_Control(void const * argument)
             }
 
             // 【关键】：检测到松开脚踏，瞬间切断！
-            if (heating_num_count > 2) 
+            if (heating_num_count > 2)
             {
                 if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 0) {
                     is_heating_active = 0; // 停止PID
@@ -86,6 +87,8 @@ void StartTask_Control(void const * argument)
                 }
             }
             heating_num_count++;
+        } else {
+            printf("%.2f(off)\r\n", K_Temperature);  // 200ms 打印温度（待机）
         }
     }
 

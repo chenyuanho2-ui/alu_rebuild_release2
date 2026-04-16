@@ -134,6 +134,7 @@ extern volatile uint8_t is_heating_active;
 extern volatile uint32_t heating_num_count;
 extern char current_file_name[32];
 extern PID_struct pid_TEMP;
+extern uint8_t laser_test_state;
 
 // ==========================================
 // 串口PID交互新增全局变量定义
@@ -148,6 +149,15 @@ float temp_Kp = 0.0f, temp_Ki = 0.0f, temp_Kd = 0.0f;
 // ====================================================================
 int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres)
 {
+	if (laser_test_state == 3) {
+		uint8_t alu_485_laser_on[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
+		HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
+		HAL_UART_Transmit(&huart4, alu_485_laser_on, 10, 0xFFFF);
+		HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
+		is_heating_active = 1;
+		return 1;
+	}
+
 	// 1. 设置并发送 RS485 开启激光指令
 	data_485[6] = (uint8_t)(power_thres * 10);
 	uint8_t xorResult = data_485[2] ^ data_485[3] ^ data_485[4] ^ data_485[5] ^ data_485[6]; 

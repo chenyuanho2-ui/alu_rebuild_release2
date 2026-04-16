@@ -14,6 +14,7 @@ extern uint8_t enable_pid_tune;
 extern uint8_t enable_laser_test;
 extern uint8_t pid_algorithm_type;
 extern uint8_t is_serial_interacting;
+extern uint8_t enable_stack_print;
 extern uint8_t laser_test_state;
 extern float target_laser_current;
 extern float target_laser_pwm;

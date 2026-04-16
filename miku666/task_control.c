@@ -39,6 +39,7 @@ extern PID_struct pid_TEMP;
 extern uint8_t uart_pid_state;
 
 extern uint8_t need_stop_cleanup;
+extern uint8_t enable_stack_print;
 
 extern FuzzyPID_struct fuzzy_pid_TEMP;
 extern AdvPID_struct adv_pid_TEMP;
@@ -47,6 +48,13 @@ static uint8_t last_heating_active = 0;
 
 void StartTask_Control(void const * argument)
 {
+    // ================================================
+    // 时间基准: 10ms (TIM7定时器中断触发)
+    // 计数器说明:
+    //   tick_10ms % 20 == 0  → 200ms间隔 (SD卡写入/温度打印)
+    //   tick_10ms % 100 == 0 → 1000ms间隔 (堆栈打印)
+    // ================================================
+
     TempFilter_Init();
     FuzzyPID_init(&fuzzy_pid_TEMP);
     AdvPID_Init(&adv_pid_TEMP, 40.0f, 0.8f, 125.0f);
@@ -58,9 +66,12 @@ void StartTask_Control(void const * argument)
 
     for(;;)
     {
-        osSemaphoreWait(Sem_10msHandle, osWaitForever);
+        osSemaphoreWait(Sem_10msHandle, osWaitForever);  // 等待10ms定时器信号
         tick_10ms++;
 
+        // ================================================
+        // 10ms每次: 温度滤波采集 + 脚踏检测 + PID控制输出
+        // ================================================
         TempFilter_Process();
         K_Temperature = TempFilter_GetUIAvgTemp();
 
@@ -73,6 +84,9 @@ void StartTask_Control(void const * argument)
             heating_startup_counter++;
         }
 
+        // ================================================
+        // 脚踏抬起检测: 停止加热 (需踩下超过30ms有效)
+        // ================================================
         if (HAL_GPIO_ReadPin(btn_foot_GPIO_Port, btn_foot_Pin) == 0 && is_heating_active == 1) {
             if (heating_startup_counter > 3) {
                 is_heating_active = 0;
@@ -87,6 +101,9 @@ void StartTask_Control(void const * argument)
             }
         }
 
+        // ================================================
+        // PID控制: 温度采集 + 闭环计算 + PWM输出
+        // ================================================
         if (is_heating_active == 1) {
             K_Temperature = K_Temperature + temp_modify;
             if (K_Temperature >= 150) K_Temperature = 150;
@@ -97,10 +114,6 @@ void StartTask_Control(void const * argument)
             if (laser_test_state == 3) {
                 extern float target_laser_current;
                 extern float target_laser_pwm;
-                HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
-                uint8_t alu_485_laser_on[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
-                HAL_UART_Transmit(&huart4, alu_485_laser_on, 10, 100);
-                HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
                 DAC_SetLaserCurrent(target_laser_current);
                 __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, (uint32_t)target_laser_pwm);
                 pwm_value = target_laser_pwm;
@@ -120,6 +133,18 @@ void StartTask_Control(void const * argument)
             __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1);
         }
 
+        // ================================================
+        // 10ms每次: 温度打印 (未加热时200ms，加热时10ms)
+        // ================================================
+        if (is_heating_active == 1) {
+            printf("%.2f(on)\r\n", K_Temperature);  // 加热时10ms打印一次
+        } else if (tick_10ms % 20 == 0 && is_serial_interacting == 0 && uart_pid_state == 0) {
+            printf("%.2f(off)\r\n", K_Temperature);  // 非加热时200ms打印一次
+        }
+
+        // ================================================
+        // 200ms间隔: 冷端补偿更新 + SD卡数据写入
+        // ================================================
         if (tick_10ms % 20 == 0) {
             Thermocouple_UpdateColdJunction();
 
@@ -133,19 +158,20 @@ void StartTask_Control(void const * argument)
                     xQueueSend(SDWriteQueueHandle, BufferWrite, 0);
                 }
                 heating_num_count++;
-            } else {
-                if (is_serial_interacting == 0 && uart_pid_state == 0) {
-                    printf("%.2f(off)\r\n", K_Temperature);
-                }
             }
         }
 
+        // ================================================
+        // 1000ms间隔: 信号量释放 + 堆栈打印
+        // ================================================
         if (tick_10ms % 100 == 0) {
-            osSemaphoreRelease(alu_temperatureHandle);
-            printf("[STACK] aluMain:%u, Control:%u, SubProg:%u\r\n",
-                   (unsigned int)uxTaskGetStackHighWaterMark(aluMainHandle),
-                   (unsigned int)uxTaskGetStackHighWaterMark(Task_ControlHandle),
-                   (unsigned int)uxTaskGetStackHighWaterMark(aluSubProgressHandle));
+            osSemaphoreRelease(alu_temperatureHandle);  // 屏幕温度更新，不依赖enable_stack_print
+            if (enable_stack_print == 1) {
+                printf("[STACK] aluMain:%u, Control:%u, SubProg:%u\r\n",
+                       (unsigned int)uxTaskGetStackHighWaterMark(aluMainHandle),
+                       (unsigned int)uxTaskGetStackHighWaterMark(Task_ControlHandle),
+                       (unsigned int)uxTaskGetStackHighWaterMark(aluSubProgressHandle));
+            }
         }
     }
 }

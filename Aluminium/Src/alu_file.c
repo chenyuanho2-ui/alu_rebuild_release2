@@ -154,7 +154,7 @@ void Alu_sniff_files(AluDynList* list, const TCHAR *sniff_path){
 
     AluSD_statu = f_opendir(&AluDir, sniff_path);
     if (AluSD_statu != FR_OK) {return;}  // 打开目录失败
-    
+
     while (1) {
         AluSD_statu = f_readdir(&AluDir, &AluFile_info);
         if (AluSD_statu != FR_OK || AluFile_info.fname[0] == 0) {
@@ -162,9 +162,12 @@ void Alu_sniff_files(AluDynList* list, const TCHAR *sniff_path){
         }
 
         if (AluFile_info.fattrib & AM_DIR) {
-            // 忽略文件夹
-            continue;
-        }else
+            continue;  // 忽略文件夹
+        }
+
+        if (strncmp(AluFile_info.fname, "pid_cfg", 7) == 0) {
+            continue;  // 忽略pid_cfg.txt配置文件
+        }
 
         Alu_list_add(list, AluFile_info.fname);
     }

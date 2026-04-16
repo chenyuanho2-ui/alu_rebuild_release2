@@ -17,40 +17,59 @@ extern uint8_t uart_pid_state;
 extern float temp_Kp, temp_Ki, temp_Kd;
 extern QueueHandle_t UartRxQueue;
 
-double K_Temperature   = 0;
-float  pwm_percent     = 0;
-int    temp_modify     = 0;
-float  temp_thres      = 60;
-float  power_thres     = 1.0;
+// ================================================
+// 变量分类说明:
+// A区-用户可配置变量: 初始值设定处，可按需修改
+// B区-系统内部运行变量: 由系统自动更新，仅供读取
+// C区-UI界面状态变量: 界面显示和交互相关
+// D区-数据结构体实例: PID控制器实例
+// E区-文件与激光测试: SD卡管理与激光测试参数
+// ================================================
 
-int    index_screen    = 2;
-int    index_choose    = 1;
+// ================================================
+// A区: 用户可配置变量 (初始值设定处，可按需修改)
+// ================================================
+float  temp_thres      = 65;   // 目标温度阈值(°C)，范围0-150，按Key2/Key3调节
+float  power_thres     = 2.6;  // 激光功率阈值(0-9.0)，按Key2/Key3调节
+int    temp_modify     = 0;    // 温度修正值，Key1+Key4组合键切换(0或10)，补偿传感器误差
+uint8_t pid_algorithm_type = 2;    // PID算法类型：0=标准PID，1=模糊PID，2=高级PID
+uint8_t enable_pid_tune = 1;       // PID串口调试使能：0=禁用，1=启用(通过set_pid指令调节)
+uint8_t enable_laser_test = 0;     // 激光测试模式使能：0=禁用，1=启用(通过laseron指令)
+uint8_t sd_record_enable = 1;             // SD卡记录使能：1=记录，0=禁用
+uint8_t enable_stack_print = 0;          // 堆栈打印使能：0=禁用，1=启用(每1s打印任务堆栈)
 
-AluDynList sd_file_list;
-int    num_file        = 0;
+// ================================================
+// B区: 系统内部运行变量 (只读，勿手动修改)
+// ================================================
+double K_Temperature   = 0;    // 实时温度值，双通道滤波后供PID和UI使用(°C)
+float  pwm_percent     = 0;    // PWM输出百分比(0-1)，只读，用于UI显示
+volatile uint8_t is_heating_active = 0;   // 加热激活状态：1=加热中，0=停止
+volatile uint32_t heating_num_count = 0;  // 加热计数：CSV数据行号，每10ms递增
+uint8_t need_stop_cleanup = 0;           // 停止加热清理标志：脚踏松开时置1，触发数据保存和界面切换
+uint8_t is_serial_interacting = 0;      // 串口交互状态标志：防止加热时串口指令冲突
+uint8_t laser_test_state = 0;           // 激光测试状态机：0=空闲，1=输入电流PWM，2=确认，3=就绪
+char current_file_name[32] = {0};      // 当前数据文件名，格式: "data_N.csv"
 
-// ==========================================
-// 模块1: 全局状态变量定义
-// ==========================================
-uint8_t enable_pid_tune = 0;
-uint8_t enable_laser_test = 0;
-uint8_t pid_algorithm_type = 0;
-uint8_t is_serial_interacting = 0;
-uint8_t laser_test_state = 0;
-float target_laser_current = 0.0f;
-float target_laser_pwm = 0.0f;
+// ================================================
+// C区: UI界面状态变量
+// ================================================
+int    index_screen    = 2;    // 当前屏幕索引：0=主界面，1=加热监控界面
+int    index_choose    = 1;    // 当前设置项选择：0=温度阈值，1=功率阈值
 
-// ==========================================
-// 全局状态控制变量
-// ==========================================
-uint8_t need_stop_cleanup = 0;
-volatile uint8_t is_heating_active = 0;
-volatile uint32_t heating_num_count = 0;
-uint8_t sd_record_enable = 1;
-char current_file_name[32] = {0};
-PID_struct pid_TEMP;
-FuzzyPID_struct fuzzy_pid_TEMP;
-AdvPID_struct adv_pid_TEMP;
+// ================================================
+// D区: 数据结构体实例
+// ================================================
+PID_struct pid_TEMP;              // 标准PID结构体实例
+FuzzyPID_struct fuzzy_pid_TEMP;   // 模糊PID结构体实例
+AdvPID_struct adv_pid_TEMP;       // 高级PID结构体实例
+
+// ================================================
+// E区: 文件与激光测试
+// ================================================
+AluDynList sd_file_list;       // SD卡文件动态列表，管理已存储的CSV文件
+int    num_file        = 0;    // 当前CSV文件编号(递增)，格式: data_N.csv
+float target_laser_current = 0.0f; // 激光测试目标电流值(mA)
+float target_laser_pwm = 0.0f;     // 激光测试目标PWM值(0-1000)
 
 // ==========================================
 // 收尾清理函数 (加入防卡死内存释放)
@@ -96,6 +115,9 @@ void AluMain(void const * argument)
   if (SDWriteQueueHandle == NULL) {
       SDWriteQueueHandle = xQueueCreate(20, 64); // 创建SD卡异步写入队列
   }
+  if (UartRxQueue == NULL) {
+      UartRxQueue = xQueueCreate(10, 64);  // 创建串口接收队列
+  }
 
   SD_Load_PID_Config();
 
@@ -140,7 +162,7 @@ void AluMain(void const * argument)
                       } else {
                           printf("Error: Cannot enter laser mode while heating active\r\n");
                       }
-                  } else if (strcmp(uart_buf, "set_pid") == 0 || strcmp(uart_buf, "SET_PID") == 0) {
+                  } else if (strcmp(uart_buf, "pid") == 0 || strcmp(uart_buf, "PID") == 0) {
                       if (enable_pid_tune == 1 && is_heating_active == 0) {
                           is_serial_interacting = 1;
                           uart_pid_state = 1;
@@ -154,7 +176,7 @@ void AluMain(void const * argument)
                       }
                   } else if (strcmp(uart_buf, "help") == 0 || strcmp(uart_buf, "HELP") == 0) {
                       printf("=== Commands ===\r\n");
-                      printf("set_pid - Enter PID tuning mode\r\n");
+                      printf("pid - Enter PID tuning mode\r\n");
                       printf("laseron - Enter laser test mode\r\n");
                       printf("help - Show this message\r\n");
                   }
@@ -208,6 +230,15 @@ void AluMain(void const * argument)
                       pid_TEMP.Kp = temp_Kp;
                       pid_TEMP.Ki = temp_Ki;
                       pid_TEMP.Kd = temp_Kd;
+
+                      adv_pid_TEMP.Kp = temp_Kp;
+                      adv_pid_TEMP.Ki = temp_Ki;
+                      adv_pid_TEMP.Kd = temp_Kd;
+
+                      fuzzy_pid_TEMP.Kp = temp_Kp;
+                      fuzzy_pid_TEMP.Ki = temp_Ki;
+                      fuzzy_pid_TEMP.Kd = temp_Kd;
+
                       if (pid_algorithm_type == 0) {
                           SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
                       }

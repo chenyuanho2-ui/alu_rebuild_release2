@@ -4,39 +4,53 @@
 #include "usart.h"
 #include "tim.h"
 #include "pid_storage.h"
+#include "fuzzy_pid.h"
+#include "advanced_pid.h"
 #include <stdio.h>
-#include <stdlib.h> // 【新增】用于 free() 函数释放内存
+#include <stdlib.h>
 #include <string.h>
 #include "FreeRTOS.h"
 #include "queue.h"
 
 extern QueueHandle_t SDWriteQueueHandle;
 extern uint8_t uart_pid_state;
-extern uint8_t pid_algorithm_type;
 extern float temp_Kp, temp_Ki, temp_Kd;
 extern QueueHandle_t UartRxQueue;
 
-double K_Temperature   = 0;        
-float  pwm_percent     = 0;        
-int    temp_modify     = 0;        
-float  temp_thres      = 60;	   
-float  power_thres     = 1.0;      
+double K_Temperature   = 0;
+float  pwm_percent     = 0;
+int    temp_modify     = 0;
+float  temp_thres      = 60;
+float  power_thres     = 1.0;
 
-int    index_screen    = 2;        
-int    index_choose    = 1;        
+int    index_screen    = 2;
+int    index_choose    = 1;
 
-AluDynList sd_file_list;           
-int    num_file        = 0;        
+AluDynList sd_file_list;
+int    num_file        = 0;
+
+// ==========================================
+// 模块1: 全局状态变量定义
+// ==========================================
+uint8_t enable_pid_tune = 0;
+uint8_t enable_laser_test = 0;
+uint8_t pid_algorithm_type = 0;
+uint8_t is_serial_interacting = 0;
+uint8_t laser_test_state = 0;
+float target_laser_current = 0.0f;
+float target_laser_pwm = 0.0f;
 
 // ==========================================
 // 全局状态控制变量
 // ==========================================
-uint8_t need_stop_cleanup = 0;           // 清理信号
-volatile uint8_t is_heating_active = 0;  // 1:正在加热, 0:停止加热
-volatile uint32_t heating_num_count = 0; // 加热时间计数
-uint8_t sd_record_enable = 1;            // SD 记录开关：1=启用，0=禁用
-char current_file_name[32] = {0};        // 当前正在写入的CSV文件名
-PID_struct pid_TEMP;                     // 全局PID对象
+uint8_t need_stop_cleanup = 0;
+volatile uint8_t is_heating_active = 0;
+volatile uint32_t heating_num_count = 0;
+uint8_t sd_record_enable = 1;
+char current_file_name[32] = {0};
+PID_struct pid_TEMP;
+FuzzyPID_struct fuzzy_pid_TEMP;
+AdvPID_struct adv_pid_TEMP;
 
 // ==========================================
 // 收尾清理函数 (加入防卡死内存释放)
@@ -110,53 +124,102 @@ void AluMain(void const * argument)
       // 3. 处理串口接收（从环形FIFO读取数据发送到队列）
       Uart_Process_Rx();
 
-      // 4. 串口PID交互状态机处理
+      // 4. 串口指令解析
       if (UartRxQueue != NULL) {
           char uart_buf[64] = {0};
           if (xQueueReceive(UartRxQueue, uart_buf, 0) == pdTRUE) {
-              switch (uart_pid_state) {
-                  case 0: {
-                      if (strcmp(uart_buf, "SET_PID") == 0 || strcmp(uart_buf, "set_pid") == 0) {
-                          if (is_heating_active == 0 && pid_algorithm_type == 0) {
-                              uart_pid_state = 1;
-                              printf("Current PID: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
-                              printf("Enter new params (format: x,y,z):\r\n");
-                          } else if (is_heating_active != 0) {
-                              printf("Error: Heating in progress, cannot modify PID\r\n");
-                          } else {
-                              printf("Error: Not in normal PID mode\r\n");
-                          }
-                      }
-                      break;
-                  }
-                  case 1: {
-                      if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
-                          uart_pid_state = 2;
-                          printf("Parsed: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
-                          printf("Confirm [Y], Re-enter [N]\r\n");
+              if (laser_test_state == 0) {
+                  if (strcmp(uart_buf, "laseron") == 0 || strcmp(uart_buf, "LASERON") == 0) {
+                      if (enable_laser_test == 1 && is_heating_active == 0) {
+                          is_serial_interacting = 1;
+                          laser_test_state = 1;
+                          printf("Laser Test Mode ON\r\n");
+                          printf("Enter target current and PWM (format: X,Y):\r\n");
+                      } else if (enable_laser_test == 0) {
+                          printf("Error: Laser test not enabled (set enable_laser_test=1)\r\n");
                       } else {
-                          printf("Format error, re-enter (format: x,y,z):\r\n");
+                          printf("Error: Cannot enter laser mode while heating active\r\n");
                       }
-                      break;
-                  }
-                  case 2: {
-                      if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
-                          pid_TEMP.Kp = temp_Kp;
-                          pid_TEMP.Ki = temp_Ki;
-                          pid_TEMP.Kd = temp_Kd;
-                          SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
-                          printf("Success, exiting config mode\r\n");
-                          uart_pid_state = 0;
-                      } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
-                          printf("Cancelled, enter new params (format: x,y,z):\r\n");
+                  } else if (strcmp(uart_buf, "set_pid") == 0 || strcmp(uart_buf, "SET_PID") == 0) {
+                      if (enable_pid_tune == 1 && is_heating_active == 0) {
+                          is_serial_interacting = 1;
                           uart_pid_state = 1;
+                          printf("PID Tuning Mode ON\r\n");
+                          printf("Current: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
+                          printf("Enter new params (format: Kp,Ki,Kd):\r\n");
+                      } else if (enable_pid_tune == 0) {
+                          printf("Error: PID tuning not enabled (set enable_pid_tune=1)\r\n");
                       } else {
-                          printf("Invalid input, reply Y or N\r\n");
+                          printf("Error: Cannot tune PID while heating active\r\n");
                       }
-                      break;
+                  } else if (strcmp(uart_buf, "help") == 0 || strcmp(uart_buf, "HELP") == 0) {
+                      printf("=== Commands ===\r\n");
+                      printf("set_pid - Enter PID tuning mode\r\n");
+                      printf("laseron - Enter laser test mode\r\n");
+                      printf("help - Show this message\r\n");
                   }
-                  default:
-                      break;
+              } else if (laser_test_state == 1) {
+                  float tmp_current = 0.0f;
+                  float tmp_pwm = 0.0f;
+                  if (sscanf(uart_buf, "%f,%f", &tmp_current, &tmp_pwm) == 2) {
+                      target_laser_current = tmp_current;
+                      target_laser_pwm = tmp_pwm;
+                      laser_test_state = 2;
+                      printf("Target: Current=%.2f, PWM=%.2f\r\n", target_laser_current, target_laser_pwm);
+                      printf("Confirm apply? [Y/N]:\r\n");
+                  } else {
+                      printf("Format error, enter: X,Y (e.g., 2.5,500)\r\n");
+                  }
+              } else if (laser_test_state == 2) {
+                  if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                      laser_test_state = 3;
+                      is_serial_interacting = 0;
+                      printf("Laser ready! Step on foot pedal to test.\r\n");
+                  } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      target_laser_current = 0.0f;
+                      target_laser_pwm = 0.0f;
+                      laser_test_state = 1;
+                      printf("Cancelled. Enter new values (format: X,Y):\r\n");
+                  } else {
+                      printf("Reply Y or N\r\n");
+                  }
+              }
+
+              if (laser_test_state > 0) {
+                  if (strcmp(uart_buf, "laseroff") == 0 || strcmp(uart_buf, "LASEROFF") == 0) {
+                      laser_test_state = 0;
+                      target_laser_current = 0.0f;
+                      target_laser_pwm = 0.0f;
+                      is_serial_interacting = 0;
+                      printf("Laser test mode OFF\r\n");
+                  }
+              }
+
+              if (uart_pid_state == 1 && laser_test_state == 0) {
+                  if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
+                      uart_pid_state = 2;
+                      printf("Parsed: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
+                      printf("Confirm [Y], Re-enter [N]:\r\n");
+                  } else {
+                      printf("Format error, enter: Kp,Ki,Kd (e.g., 40,0.8,125)\r\n");
+                  }
+              } else if (uart_pid_state == 2 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                      pid_TEMP.Kp = temp_Kp;
+                      pid_TEMP.Ki = temp_Ki;
+                      pid_TEMP.Kd = temp_Kd;
+                      if (pid_algorithm_type == 0) {
+                          SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
+                      }
+                      printf("Success, PID updated\r\n");
+                      uart_pid_state = 0;
+                      is_serial_interacting = 0;
+                  } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      printf("Cancelled. Enter new params:\r\n");
+                      uart_pid_state = 1;
+                  } else {
+                      printf("Reply Y or N\r\n");
+                  }
               }
           }
       }

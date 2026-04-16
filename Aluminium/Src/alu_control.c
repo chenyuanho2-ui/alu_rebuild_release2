@@ -139,7 +139,6 @@ extern PID_struct pid_TEMP;
 // 串口PID交互新增全局变量定义
 // ==========================================
 QueueHandle_t UartRxQueue = NULL;
-uint8_t pid_algorithm_type = 0;
 uint8_t uart_pid_state = 0;
 float temp_Kp = 0.0f, temp_Ki = 0.0f, temp_Kd = 0.0f;
 

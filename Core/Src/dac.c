@@ -27,6 +27,12 @@
 DAC_HandleTypeDef hdac1;
 DMA_HandleTypeDef hdma_dac1_ch1;
 
+void DAC_SetLaserCurrent(float current) {
+    uint32_t dac_value = (uint32_t)(current * 1241.0f);
+    if (dac_value > 4095) dac_value = 4095;
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_value);
+}
+
 /* DAC1 init function */
 void MX_DAC1_Init(void)
 {

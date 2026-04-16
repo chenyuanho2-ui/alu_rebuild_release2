@@ -41,7 +41,7 @@ extern DAC_HandleTypeDef hdac1;
 void MX_DAC1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void DAC_SetLaserCurrent(float current);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

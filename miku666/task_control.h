@@ -3,8 +3,13 @@
 
 #include "cmsis_os.h"
 #include "main.h"
+#include "pid.h"
+#include "fuzzy_pid.h"
+#include "advanced_pid.h"
 
-// 声明咱们的强控制任务入口函数
+extern FuzzyPID_struct fuzzy_pid_TEMP;
+extern AdvPID_struct adv_pid_TEMP;
+
 void StartTask_Control(void const * argument);
 
-#endif /* __TASK_CONTROL_H */
+#endif

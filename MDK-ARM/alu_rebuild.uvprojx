@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32H750xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../FATFS/Target;../FATFS/App;../TouchGFX/App;../TouchGFX/target/generated;../TouchGFX/target;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/Third_Party/FatFs/src;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Aluminium/Inc;../middlewares/st/touchgfx/framework/include;../touchgfx/generated/fonts/include;../touchgfx/generated/gui_generated/include;../touchgfx/generated/images/include;../touchgfx/generated/texts/include;../touchgfx/generated/videos/include;../touchgfx/gui/include;../miku666</IncludePath>
+              <IncludePath>../Core/Inc;../FATFS/Target;../FATFS/App;../TouchGFX/App;../TouchGFX/target/generated;../TouchGFX/target;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Middlewares/Third_Party/FatFs/src;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;../Aluminium/Inc;../middlewares/st/touchgfx/framework/include;../touchgfx/generated/fonts/include;../touchgfx/generated/gui_generated/include;../touchgfx/generated/images/include;../touchgfx/generated/texts/include;../touchgfx/generated/videos/include;../touchgfx/gui/include;../miku666;..\miku666\pid</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1545,15 +1545,30 @@
               <FileType>1</FileType>
               <FilePath>..\miku666\ui_task.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>pid</GroupName>
+          <Files>
+            <File>
+              <FileName>advanced_pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\miku666\pid\advanced_pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>fuzzy_pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\miku666\pid\fuzzy_pid.c</FilePath>
+            </File>
             <File>
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\miku666\pid.c</FilePath>
+              <FilePath>..\miku666\pid\pid.c</FilePath>
             </File>
             <File>
               <FileName>pid_storage.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\miku666\pid_storage.c</FilePath>
+              <FilePath>..\miku666\pid\pid_storage.c</FilePath>
             </File>
           </Files>
         </Group>

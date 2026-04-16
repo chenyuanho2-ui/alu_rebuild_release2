@@ -167,6 +167,8 @@
 ".\alu_rebuild\thermocouple.o"
 ".\alu_rebuild\task_control.o"
 ".\alu_rebuild\ui_task.o"
+".\alu_rebuild\advanced_pid.o"
+".\alu_rebuild\fuzzy_pid.o"
 ".\alu_rebuild\pid.o"
 ".\alu_rebuild\pid_storage.o"
 --nodebug --strict --scatter ".\alu_rebuild\alu_rebuild.sct"

@@ -64,16 +64,29 @@ void StartTask_Control(void const * argument)
     uint32_t heating_startup_counter = 0;
     uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
 
+    float temp_sum_200ms = 0.0f;  // 200ms温度累加器
+    uint32_t temp_count_200ms = 0;  // 200ms采样计数
+    float temp_avg_200ms = 0.0f;  // 200ms平均温度
+
+    float temp_sum_1s = 0.0f;  // 1s温度累加器
+    uint32_t temp_count_1s = 0;  // 1s采样计数
+    float temp_avg_1s = 0.0f;  // 1s平均温度
+
     for(;;)
     {
         osSemaphoreWait(Sem_10msHandle, osWaitForever);  // 等待10ms定时器信号
         tick_10ms++;
 
         // ================================================
-        // 10ms每次: 温度滤波采集 + 脚踏检测 + PID控制输出
+        // 10ms每次: 温度滤波采集 + 累加平均 + 脚踏检测 + PID控制输出
         // ================================================
         TempFilter_Process();
         K_Temperature = TempFilter_GetUIAvgTemp();
+
+        temp_sum_200ms += K_Temperature;
+        temp_count_200ms++;
+        temp_sum_1s += K_Temperature;
+        temp_count_1s++;
 
         if (last_heating_active == 0 && is_heating_active == 1) {
             heating_startup_counter = 0;
@@ -134,24 +147,32 @@ void StartTask_Control(void const * argument)
         }
 
         // ================================================
-        // 10ms每次: 温度打印 (未加热时200ms，加热时10ms)
+        // 10ms每次: 温度打印 (加热时10ms，非加热时200ms平均)
         // ================================================
         if (is_heating_active == 1) {
             printf("%.2f(on)\r\n", K_Temperature);  // 加热时10ms打印一次
-        } else if (tick_10ms % 20 == 0 && is_serial_interacting == 0 && uart_pid_state == 0) {
-            printf("%.2f(off)\r\n", K_Temperature);  // 非加热时200ms打印一次
         }
 
         // ================================================
-        // 200ms间隔: 冷端补偿更新 + SD卡数据写入
+        // 200ms间隔: 冷端补偿更新 + SD卡数据写入 + 温度打印(非加热时)
         // ================================================
         if (tick_10ms % 20 == 0) {
             Thermocouple_UpdateColdJunction();
 
+            if (temp_count_200ms > 0) {
+                temp_avg_200ms = temp_sum_200ms / temp_count_200ms;
+            }
+            temp_sum_200ms = 0.0f;
+            temp_count_200ms = 0;
+
+            if (is_heating_active == 0 && is_serial_interacting == 0 && uart_pid_state == 0) {
+                printf("%.2f(off)\r\n", temp_avg_200ms);  // 非加热时200ms平均打印一次
+            }
+
             if (is_heating_active == 1) {
                 char BufferWrite[64] = {0};
                 sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f",
-                    heating_num_count, K_Temperature,
+                    heating_num_count, temp_avg_200ms,
                     pid_TEMP.speed[0], pid_TEMP.speed[1], pid_TEMP.speed[2]);
 
                 if (sd_record_enable && SDWriteQueueHandle != NULL) {
@@ -162,9 +183,17 @@ void StartTask_Control(void const * argument)
         }
 
         // ================================================
-        // 1000ms间隔: 信号量释放 + 堆栈打印
+        // 1000ms间隔: 计算1s平均温度 + 信号量释放 + 堆栈打印
         // ================================================
         if (tick_10ms % 100 == 0) {
+            if (temp_count_1s > 0) {
+                temp_avg_1s = temp_sum_1s / temp_count_1s;
+            }
+            temp_sum_1s = 0.0f;
+            temp_count_1s = 0;
+
+            extern float g_display_temp_avg;  // 屏幕显示用平均温度
+            g_display_temp_avg = temp_avg_1s;
             osSemaphoreRelease(alu_temperatureHandle);  // 屏幕温度更新，不依赖enable_stack_print
             if (enable_stack_print == 1) {
                 printf("[STACK] aluMain:%u, Control:%u, SubProg:%u\r\n",

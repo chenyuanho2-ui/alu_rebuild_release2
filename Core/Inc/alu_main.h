@@ -18,5 +18,6 @@ extern uint8_t enable_stack_print;
 extern uint8_t laser_test_state;
 extern float target_laser_current;
 extern float target_laser_pwm;
+extern float g_display_temp_avg;
 
 #endif /* __ALU_MAIN_H */

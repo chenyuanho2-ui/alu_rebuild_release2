@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\alu_rebuild\alu_rebuild.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\alu_rebuild\alu_rebuild.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 16 12:25:43 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 16 13:56:38 2026
 <BR><P>
 <H3>Maximum Stack Usage =          0 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -2046,7 +2046,6 @@ Global Symbols
 <LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Application::handleTickEvent()
 <LI><a href="#[427]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Bitmap::getId() const
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Container::add(touchgfx::Drawable&)
-<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[4b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::circularBuffer&lang;(unsigned)10&rang;::peekChar()
 <LI><a href="#[1d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::ListLayout::setDirection(touchgfx::Direction)
 <LI><a href="#[459]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::CanvasWidgetRenderer::setupBuffer(unsigned char*, unsigned)
@@ -2075,6 +2074,7 @@ Global Symbols
 <LI><a href="#[54b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::blitCopyL8_RGB565(const unsigned char*, const unsigned char*, const touchgfx::Rect&, const touchgfx::Rect&, unsigned char)
 <LI><a href="#[254]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::fillBuffer(unsigned char*, unsigned short, const touchgfx::Rect&, touchgfx::colortype, unsigned char)
 <LI><a href="#[4b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::fillInputBuffer()
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[538]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Outline::setCurCellNew(int, int)
 <LI><a href="#[51e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Outline::reset()
 <LI><a href="#[4c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::circularBuffer&lang;(unsigned)10&rang;::dropFront(unsigned short)
@@ -4299,7 +4299,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sd_diskio.o(.constdata)
 </UL>
-<P><STRONG><a name="[e4]"></a>StartTask_Control</STRONG> (Thumb, 656 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
+<P><STRONG><a name="[e4]"></a>StartTask_Control</STRONG> (Thumb, 766 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
 <BR><BR>[Calls]<UL><LI><a href="#[30d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 <LI><a href="#[404]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[31d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_SetLaserCurrent
@@ -4308,7 +4308,6 @@ Global Symbols
 <LI><a href="#[2e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[3fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
 <LI><a href="#[3fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DAC_Start
-<LI><a href="#[3ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_GetUIAvgTemp
 <LI><a href="#[405]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxTaskGetStackHighWaterMark
 <LI><a href="#[401]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PID_PWM_iteration
 <LI><a href="#[3fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FuzzyPID_init
@@ -4318,6 +4317,7 @@ Global Symbols
 <LI><a href="#[403]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Thermocouple_UpdateColdJunction
 <LI><a href="#[3fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_Process
 <LI><a href="#[3f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_Init
+<LI><a href="#[3ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_GetUIAvgTemp
 <LI><a href="#[2f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[294]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[292]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
@@ -4371,8 +4371,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[3ff]"></a>TempFilter_GetUIAvgTemp</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, temp_filter.o(i.TempFilter_GetUIAvgTemp))
-<BR><BR>[Called By]<UL><LI><a href="#[46b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Model::tick()
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
+<BR><BR>[Called By]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
 </UL>
 
 <P><STRONG><a name="[3f9]"></a>TempFilter_Init</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, temp_filter.o(i.TempFilter_Init))
@@ -5282,9 +5281,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ScrMainPresenter::alu_back_delFile(int, const char*)
 </UL>
 
-<P><STRONG><a name="[46b]"></a>Model::tick()</STRONG> (Thumb, 146 bytes, Stack size 0 bytes, model.o(i._ZN5Model4tickEv))
+<P><STRONG><a name="[46b]"></a>Model::tick()</STRONG> (Thumb, 148 bytes, Stack size 0 bytes, model.o(i._ZN5Model4tickEv))
 <BR><BR>[Calls]<UL><LI><a href="#[3fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
-<LI><a href="#[3ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TempFilter_GetUIAvgTemp
 </UL>
 <BR>[Called By]<UL><LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FrontendApplication::handleTickEvent()
 </UL>
@@ -5729,15 +5727,15 @@ Global Symbols
 <LI><a href="#[4bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::circularBuffer&lang;(unsigned)10&rang;::pushBack(unsigned short)
 <LI><a href="#[4be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextCharInternal()
 </UL>
-<BR>[Called By]<UL><LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
-<LI><a href="#[4ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::initializeInternal()
+<BR>[Called By]<UL><LI><a href="#[4ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::initializeInternal()
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[4b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::replaceInputCharacters(unsigned short, unsigned short, const unsigned short*)
 </UL>
 
 <P><STRONG><a name="[4bf]"></a>touchgfx::TextProvider::getNextLigature(unsigned char)</STRONG> (Thumb, 106 bytes, Stack size 0 bytes, texts.o(i._ZN8touchgfx12TextProvider15getNextLigatureEh))
-<BR><BR>[Calls]<UL><LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
-<LI><a href="#[4b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::circularBuffer&lang;(unsigned)10&rang;::peekChar()
+<BR><BR>[Calls]<UL><LI><a href="#[4b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::circularBuffer&lang;(unsigned)10&rang;::peekChar()
 <LI><a href="#[4c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::substituteGlyphs()
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[2a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;abort
 </UL>
 <BR>[Called By]<UL><LI><a href="#[503]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD::drawStringLTR(const touchgfx::Rect&, const touchgfx::Rect&, const touchgfx::LCD::StringVisuals&, const unsigned short*, std::__va_list)
@@ -6771,11 +6769,11 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[503]"></a>touchgfx::LCD::drawStringLTR(const touchgfx::Rect&, const touchgfx::Rect&, const touchgfx::LCD::StringVisuals&, const unsigned short*, std::__va_list)</STRONG> (Thumb, 594 bytes, Stack size 0 bytes, lcd.o(i._ZN8touchgfx3LCD13drawStringLTRERKNS_4RectES3_RKNS0_13StringVisualsEPKtSt9__va_list))
-<BR><BR>[Calls]<UL><LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
-<LI><a href="#[490]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Rect::Rect(short, short, short, short)
+<BR><BR>[Calls]<UL><LI><a href="#[490]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Rect::Rect(short, short, short, short)
 <LI><a href="#[4c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::TextProvider()
 <LI><a href="#[4bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextLigature(unsigned char)
 <LI><a href="#[4aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::initialize(const unsigned short*, std::__va_list, const unsigned short*, const touchgfx::FontContextualFormsTable*)
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[291]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
 <LI><a href="#[506]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD::WideTextInternalStruct::WideTextInternalStruct(touchgfx::TextProvider&, unsigned short, unsigned char, const touchgfx::Font*, touchgfx::WideTextAction)
 <LI><a href="#[507]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD::WideTextInternalStruct::getStringLengthForLine(bool)
@@ -9310,11 +9308,11 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> filenamecntbase.o(.constdata__ZTVN8touchgfx23TextAreaWithOneWildcardE)
 </UL>
 <P><STRONG><a name="[228]"></a>touchgfx::TextAreaWithWildcardBase::invalidateContent() const</STRONG> (Thumb, 196 bytes, Stack size 0 bytes, textareawithwildcard.o(i._ZNK8touchgfx24TextAreaWithWildcardBase17invalidateContentEv))
-<BR><BR>[Calls]<UL><LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
-<LI><a href="#[44c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TypedText::getText() const
+<BR><BR>[Calls]<UL><LI><a href="#[44c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TypedText::getText() const
 <LI><a href="#[44b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TypedText::getFont() const
 <LI><a href="#[4c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::TextProvider()
 <LI><a href="#[4a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TypedText::hasValidId() const
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 <LI><a href="#[4a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::initialize(const unsigned short*, const unsigned short*, const touchgfx::FontContextualFormsTable*, ...)
 <LI><a href="#[25c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextArea::calculateBoundingArea() const
 </UL>
@@ -9449,9 +9447,9 @@ Global Symbols
 <LI> constfont.o(.constdata__ZTVN8touchgfx9ConstFontE)
 </UL>
 <P><STRONG><a name="[1e3]"></a>touchgfx::Font::getNumberOfLines(const unsigned short*, ...) const</STRONG> (Thumb, 80 bytes, Stack size 0 bytes, font.o(i._ZNK8touchgfx4Font16getNumberOfLinesEPKtz))
-<BR><BR>[Calls]<UL><LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
-<LI><a href="#[4c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::TextProvider()
+<BR><BR>[Calls]<UL><LI><a href="#[4c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::TextProvider()
 <LI><a href="#[4aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::initialize(const unsigned short*, std::__va_list, const unsigned short*, const touchgfx::FontContextualFormsTable*)
+<LI><a href="#[4b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextChar()
 </UL>
 <BR>[Address Reference Count : 3]<UL><LI> generatedfont.o(.constdata__ZTVN8touchgfx13GeneratedFontE)
 <LI> texts.o(.constdata__ZTVN8touchgfx4FontE)

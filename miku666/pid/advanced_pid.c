@@ -20,6 +20,7 @@ void AdvPID_Init(AdvPID_struct* adv_pid, float kp, float ki, float kd) {
     }
     adv_pid->temp_history_index = 0;
     adv_pid->temp_history_count = 0;
+    adv_pid->heating_time_samples = 0;
 }
 
 float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
@@ -44,13 +45,15 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     const float TEMP_CHANGE_THRESHOLD = 5.0f;   // 1s内温度变化小于此值认为静态
 
     // P+D模式输出上限
-    const float OUTPUT_MAX_PD_MODE = 600.0f;
+    const float OUTPUT_MAX_PD_MODE = 750.0f;
 
     // 积分限幅值（防止积分饱和）
     const float INTEGRAL_LIMIT = 1500.0f;
 
     // P+I+D模式输出上限
     const float OUTPUT_MAX_PID_MODE = 1000.0f;
+
+    const uint32_t STATIC_DELAY_SAMPLES = 300;  // 加热3秒后才启用静态检测(300*10ms=3s)
     // ================================================
 
     // 更新温度历史（每10ms调用一次，100个样本=1s）
@@ -68,11 +71,12 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
         temp_change = (newest_temp >= oldest_temp) ? (newest_temp - oldest_temp) : (oldest_temp - newest_temp);
     }
 
-    // 静态误差检测：误差>5度 且 1s内温度变化<5度 → 强制开启积分
+    // 静态误差检测：误差>5度 且 1s内温度变化<5度 且 加热>3秒 → 强制开启积分
     uint8_t force_integral = 0;
-    if (abs_err > STATIC_ERR_THRESHOLD && temp_change < TEMP_CHANGE_THRESHOLD && adv_pid->temp_history_count >= 50) {
+    if (abs_err > STATIC_ERR_THRESHOLD && temp_change < TEMP_CHANGE_THRESHOLD && adv_pid->temp_history_count >= 50 && adv_pid->heating_time_samples >= STATIC_DELAY_SAMPLES) {
         force_integral = 1;
     }
+    adv_pid->heating_time_samples++;
 
     if (abs_err < DEADBAND_THRESHOLD) {
         return adv_pid->last_pwm_out;

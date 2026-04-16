@@ -16,6 +16,9 @@ void SD_Save_PID_Config(float kp, float ki, float kd) {
     FRESULT res;
     FIL file;
     UINT bw;
+    char buf[32];
+
+    sprintf(buf, "%.2f,%.2f,%.2f", kp, ki, kd);
 
     res = f_open(&file, "0:/pid_cfg.txt", FA_WRITE | FA_CREATE_ALWAYS);
     if (res != FR_OK) {
@@ -23,9 +26,11 @@ void SD_Save_PID_Config(float kp, float ki, float kd) {
         return;
     }
 
-    bw = f_printf(&file, "%.2f,%.2f,%.2f", kp, ki, kd);
+    bw = f_printf(&file, "%s", buf);
     if ((INT)bw <= 0) {
         printf("SD: Failed to write PID config (bw=%u)\r\n", bw);
+    } else {
+        printf("SD: PID saved: %s\r\n", buf);
     }
 
     f_close(&file);
@@ -40,7 +45,7 @@ void SD_Load_PID_Config(void) {
 
     res = f_open(&file, "0:/pid_cfg.txt", FA_READ);
     if (res != FR_OK) {
-        printf("SD: No pid_cfg.txt, using default PID (Kp=40, Ki=0.8, Kd=125)\r\n");
+        printf("SD: No pid_cfg.txt found (res=%d), using default PID (Kp=40, Ki=0.8, Kd=125)\r\n", res);
         pid_TEMP.Kp = fuzzy_pid_TEMP.Kp = adv_pid_TEMP.Kp = 40.0f;
         pid_TEMP.Ki = fuzzy_pid_TEMP.Ki = adv_pid_TEMP.Ki = 0.8f;
         pid_TEMP.Kd = fuzzy_pid_TEMP.Kd = adv_pid_TEMP.Kd = 125.0f;
@@ -56,9 +61,10 @@ void SD_Load_PID_Config(void) {
     }
 
     buf[br] = '\0';
+    printf("SD: Read pid_cfg.txt content: '%s'\r\n", buf);
 
     if (sscanf(buf, "%f,%f,%f", &temp_kp, &temp_ki, &temp_kd) == 3) {
-        if (temp_kp == 0 && temp_ki == 0 && temp_kd == 0) {
+        if (temp_kp == 0 && temp_ki == 0 && temp_kp == 0) {
             printf("SD: PID all zeros, using default values\r\n");
         } else {
             pid_TEMP.Kp = fuzzy_pid_TEMP.Kp = adv_pid_TEMP.Kp = temp_kp;

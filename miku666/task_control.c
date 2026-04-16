@@ -133,6 +133,7 @@ void StartTask_Control(void const * argument)
             heating_startup_counter = 0;
             adv_pid_TEMP.last_measured = (float)K_Temperature;
             adv_pid_TEMP.last_d_out = 0.0f;
+            adv_pid_TEMP.heating_time_samples = 0;
         }
         last_heating_active = is_heating_active;
 

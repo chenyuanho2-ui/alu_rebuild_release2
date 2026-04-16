@@ -25,6 +25,7 @@ typedef struct {
     float temp_history[100];
     uint8_t temp_history_index;
     uint8_t temp_history_count;
+    uint32_t heating_time_samples;  // 加热累计时间(10ms单位)，用于静态检测延迟
 } AdvPID_struct;
 
 void AdvPID_Init(AdvPID_struct* adv_pid, float kp, float ki, float kd);

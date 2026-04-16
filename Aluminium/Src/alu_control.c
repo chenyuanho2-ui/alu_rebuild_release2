@@ -170,17 +170,19 @@ int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres
 	// 2. 通知系统切换到屏幕1 (加热图表界面)
 	index_screen = 1;
 	osSemaphoreRelease(alu_screenHandle);  
-	
-	// 3. 创建本次加热的全新 CSV 数据文件
-	num_file = Alu_SD_csv_num("/") + 1; 
-	sprintf(current_file_name, "data_%d.csv", num_file);  
-	
-	// 通知 UI 刷新当前阈值
-	osSemaphoreRelease(alu_thresholdHandle);
-	
-	// 4. 写入 CSV 的第一行表头
-	uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
-	Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
+
+	// 3. 创建本次加热的全新 CSV 数据文件(sd_record_enable=1时)
+	if (sd_record_enable) {
+		num_file = Alu_SD_csv_num("/") + 1; 
+		sprintf(current_file_name, "data_%d.csv", num_file);  
+
+		// 通知 UI 刷新当前阈值
+		osSemaphoreRelease(alu_thresholdHandle);
+
+		// 4. 写入 CSV 的第一行表头
+		uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
+		Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
+	}
     
 	// 5. 初始化并清空 PID 历史数据
 	PID_init(&pid_TEMP);

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\alu_rebuild\alu_rebuild.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\alu_rebuild\alu_rebuild.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 16 15:57:11 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Apr 16 16:41:49 2026
 <BR><P>
 <H3>Maximum Stack Usage =          0 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1988,6 +1988,7 @@ Global Symbols
 <LI><a href="#[296]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_common
 </UL>
 <BR>[Called By]<UL><LI><a href="#[2fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;active_key_foot_start
+<LI><a href="#[2f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SD_Save_PID_Config
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
 </UL>
 
@@ -2072,7 +2073,6 @@ Global Symbols
 <LI><a href="#[4c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextProvider::getNextLigature(unsigned char)
 <LI><a href="#[22c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextArea::getAlignment() const
 <LI><a href="#[227]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::TextAreaWithWildcardBase::draw(const touchgfx::Rect&) const
-<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
 <LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextLine(bool, touchgfx::TextRotation)
 <LI><a href="#[55f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::getFramebufferStride()
 <LI><a href="#[54e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::blitCopyL8_ARGB8888(const unsigned char*, const unsigned char*, const touchgfx::Rect&, const touchgfx::Rect&, unsigned char)
@@ -2115,6 +2115,7 @@ Global Symbols
 <LI><a href="#[559]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Bitmap::getExtraData() const
 <LI><a href="#[510]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD::realY(const touchgfx::Rect&, short, short, touchgfx::TextRotation)
 <LI><a href="#[50f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD::realX(const touchgfx::Rect&, short, short, touchgfx::TextRotation)
+<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
 </UL>
 
 <P><STRONG><a name="[2a5]"></a>__aeabi_atexit</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, aeabi_atexit.o(.text))
@@ -2675,15 +2676,15 @@ Global Symbols
 <LI><a href="#[2de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADS1118_GetInternalTemp
 </UL>
 
-<P><STRONG><a name="[402]"></a>AdvPID_Calculate</STRONG> (Thumb, 446 bytes, Stack size 0 bytes, advanced_pid.o(i.AdvPID_Calculate))
+<P><STRONG><a name="[402]"></a>AdvPID_Calculate</STRONG> (Thumb, 466 bytes, Stack size 0 bytes, advanced_pid.o(i.AdvPID_Calculate))
 <BR><BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
 </UL>
 
-<P><STRONG><a name="[3fd]"></a>AdvPID_Init</STRONG> (Thumb, 78 bytes, Stack size 0 bytes, advanced_pid.o(i.AdvPID_Init))
+<P><STRONG><a name="[3fd]"></a>AdvPID_Init</STRONG> (Thumb, 82 bytes, Stack size 0 bytes, advanced_pid.o(i.AdvPID_Init))
 <BR><BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartTask_Control
 </UL>
 
-<P><STRONG><a name="[e3]"></a>AluMain</STRONG> (Thumb, 2012 bytes, Stack size 0 bytes, alu_main.o(i.AluMain))
+<P><STRONG><a name="[e3]"></a>AluMain</STRONG> (Thumb, 2008 bytes, Stack size 0 bytes, alu_main.o(i.AluMain))
 <BR><BR>[Calls]<UL><LI><a href="#[2f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[2ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 <LI><a href="#[2ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
@@ -4255,7 +4256,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[37f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SD_IRQHandler
 </UL>
 
-<P><STRONG><a name="[2eb]"></a>SD_Load_PID_Config</STRONG> (Thumb, 274 bytes, Stack size 0 bytes, pid_storage.o(i.SD_Load_PID_Config))
+<P><STRONG><a name="[2eb]"></a>SD_Load_PID_Config</STRONG> (Thumb, 288 bytes, Stack size 0 bytes, pid_storage.o(i.SD_Load_PID_Config))
 <BR><BR>[Calls]<UL><LI><a href="#[3f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_read
 <LI><a href="#[304]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_open
 <LI><a href="#[305]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_close
@@ -4265,10 +4266,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AluMain
 </UL>
 
-<P><STRONG><a name="[2f5]"></a>SD_Save_PID_Config</STRONG> (Thumb, 110 bytes, Stack size 0 bytes, pid_storage.o(i.SD_Save_PID_Config))
+<P><STRONG><a name="[2f5]"></a>SD_Save_PID_Config</STRONG> (Thumb, 106 bytes, Stack size 0 bytes, pid_storage.o(i.SD_Save_PID_Config))
 <BR><BR>[Calls]<UL><LI><a href="#[3f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_printf
 <LI><a href="#[304]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_open
 <LI><a href="#[305]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;f_close
+<LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[293]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AluMain
@@ -4312,7 +4314,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sd_diskio.o(.constdata)
 </UL>
-<P><STRONG><a name="[e5]"></a>StartTask_Control</STRONG> (Thumb, 1406 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
+<P><STRONG><a name="[e5]"></a>StartTask_Control</STRONG> (Thumb, 1410 bytes, Stack size 0 bytes, task_control.o(i.StartTask_Control))
 <BR><BR>[Calls]<UL><LI><a href="#[30f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 <LI><a href="#[406]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[31f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DAC_SetLaserCurrent
@@ -5916,8 +5918,8 @@ Global Symbols
 
 <P><STRONG><a name="[1cf]"></a>touchgfx::AbstractButton::executeAction()</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, button.o(i._ZN8touchgfx14AbstractButton13executeActionEv))
 <BR>[Address Reference Count : 3]<UL><LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 </UL>
 <P><STRONG><a name="[1ee]"></a>touchgfx::AbstractButton::handleClickEvent(const touchgfx::ClickEvent&)</STRONG> (Thumb, 66 bytes, Stack size 0 bytes, abstractbutton.o(i._ZN8touchgfx14AbstractButton16handleClickEventERKNS_10ClickEventE))
 <BR><BR>[Called By]<UL><LI><a href="#[1ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::ToggleButton::handleClickEvent(const touchgfx::ClickEvent&)
@@ -7330,8 +7332,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> graphelements.o(.constdata__ZTVN8touchgfx20GraphElementGridBaseE)
 <LI> graphelements.o(.constdata__ZTVN8touchgfx16GraphElementAreaE)
@@ -7683,8 +7685,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7727,8 +7729,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
 <LI> graphelements.o(.constdata__ZTVN8touchgfx20GraphElementGridBaseE)
@@ -7753,8 +7755,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7781,8 +7783,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7834,8 +7836,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7864,8 +7866,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7900,8 +7902,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7931,8 +7933,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7970,8 +7972,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -7996,8 +7998,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -8156,9 +8158,9 @@ Global Symbols
 <P><STRONG><a name="[55f]"></a>touchgfx::LCD16bpp::getFramebufferStride()</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, lcd16bpp.o(i._ZN8touchgfx8LCD16bpp20getFramebufferStrideEv))
 <BR><BR>[Calls]<UL><LI><a href="#[2a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;abort
 </UL>
-<BR>[Called By]<UL><LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
-<LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextLine(bool, touchgfx::TextRotation)
+<BR>[Called By]<UL><LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextLine(bool, touchgfx::TextRotation)
 <LI><a href="#[257]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::framebufferStride() const
+<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
 </UL>
 
 <P><STRONG><a name="[55e]"></a>touchgfx::LCD16bpp::blitCopyAlphaPerPixel(const unsigned short*, const unsigned char*, const touchgfx::Rect&, const touchgfx::Rect&, unsigned char)</STRONG> (Thumb, 498 bytes, Stack size 0 bytes, lcd16bpp.o(i._ZN8touchgfx8LCD16bpp21blitCopyAlphaPerPixelEPKtPKhRKNS_4RectES7_h))
@@ -8466,8 +8468,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[258]"></a>touchgfx::LCD16bpp::drawGlyph(unsigned short*, touchgfx::Rect, short, short, unsigned short, unsigned short, const touchgfx::Rect&, const touchgfx::GlyphNode*, const unsigned char*, unsigned char, touchgfx::colortype, unsigned char, unsigned char, touchgfx::TextRotation)</STRONG> (Thumb, 808 bytes, Stack size 0 bytes, lcd16bpp.o(i._ZN8touchgfx8LCD16bpp9drawGlyphEPtNS_4RectEssttRKS2_PKNS_9GlyphNodeEPKhhNS_9colortypeEhhNS_12TextRotationE))
-<BR><BR>[Calls]<UL><LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
-<LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextLine(bool, touchgfx::TextRotation)
+<BR><BR>[Calls]<UL><LI><a href="#[574]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextLine(bool, touchgfx::TextRotation)
 <LI><a href="#[554]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::getNativeColorFromRGB(unsigned char, unsigned char, unsigned char)
 <LI><a href="#[555]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::getNativeColor(touchgfx::colortype)
 <LI><a href="#[551]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Color::getGreenFromRGB565(unsigned short)
@@ -8479,6 +8480,7 @@ Global Symbols
 <LI><a href="#[575]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::DisplayTransformation::transformDisplayToFrameBuffer(short&, short&)
 <LI><a href="#[49a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Rect::bottom() const
 <LI><a href="#[499]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Rect::right() const
+<LI><a href="#[576]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::LCD16bpp::nextPixel(bool, touchgfx::TextRotation)
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> lcd16bpp.o(.constdata__ZTVN8touchgfx8LCD16bppE)
 </UL>
@@ -9675,13 +9677,13 @@ Global Symbols
 <LI><a href="#[55c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Bitmap::getSolidRect() const
 </UL>
 <BR>[Address Reference Count : 3]<UL><LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 </UL>
 <P><STRONG><a name="[1cd]"></a>touchgfx::Button::invalidateContent() const</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, button.o(i._ZNK8touchgfx6Button17invalidateContentEv))
 <BR>[Address Reference Count : 3]<UL><LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 </UL>
 <P><STRONG><a name="[1cb]"></a>touchgfx::Button::draw(const touchgfx::Rect&) const</STRONG> (Thumb, 176 bytes, Stack size 0 bytes, button.o(i._ZNK8touchgfx6Button4drawERKNS_4RectE))
 <BR><BR>[Calls]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;touchgfx::Rect::Rect()
@@ -9896,8 +9898,8 @@ Global Symbols
 <LI> screen1viewbase.o(.constdata__ZTVN8touchgfx11GraphScrollILs99EEE)
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
 <LI> box.o(.constdata__ZTVN8touchgfx3BoxE)
@@ -9923,8 +9925,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -9959,8 +9961,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -10021,8 +10023,8 @@ Global Symbols
 <LI> boxwithborder.o(.constdata__ZTVN8touchgfx13BoxWithBorderE)
 <LI> button.o(.constdata__ZTVN8touchgfx6ButtonE)
 <LI> canvaswidget.o(.constdata__ZTVN8touchgfx12CanvasWidgetE)
-<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> buttonwithlabel.o(.constdata__ZTVN8touchgfx15ButtonWithLabelE)
+<LI> togglebutton.o(.constdata__ZTVN8touchgfx12ToggleButtonE)
 <LI> circle.o(.constdata__ZTVN8touchgfx6CircleE)
 <LI> container.o(.constdata__ZTVN8touchgfx9ContainerE)
 <LI> drawable.o(.constdata__ZTVN8touchgfx8DrawableE)
@@ -10456,7 +10458,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AluMain
 </UL>
 
-<P><STRONG><a name="[2fc]"></a>active_key_foot_start</STRONG> (Thumb, 224 bytes, Stack size 0 bytes, alu_control.o(i.active_key_foot_start))
+<P><STRONG><a name="[2fc]"></a>active_key_foot_start</STRONG> (Thumb, 228 bytes, Stack size 0 bytes, alu_control.o(i.active_key_foot_start))
 <BR><BR>[Calls]<UL><LI><a href="#[2ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreRelease
 <LI><a href="#[2e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[2e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin

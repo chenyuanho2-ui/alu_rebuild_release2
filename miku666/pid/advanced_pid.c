@@ -12,6 +12,14 @@ void AdvPID_Init(AdvPID_struct* adv_pid, float kp, float ki, float kd) {
     adv_pid->last_pwm_out = 0.0f;
     adv_pid->last_d_out = 0.0f;
     adv_pid->integral = 0.0f;
+    adv_pid->speed[0] = adv_pid->speed[1] = adv_pid->speed[2] = 0.0f;
+
+    // 初始化温度历史
+    for (int i = 0; i < 100; i++) {
+        adv_pid->temp_history[i] = 0.0f;
+    }
+    adv_pid->temp_history_index = 0;
+    adv_pid->temp_history_count = 0;
 }
 
 float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
@@ -28,11 +36,15 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     const float D_FILTER_COEF_LAST = 0.6f;
     const float D_FILTER_COEF_RAW  = 0.4f;
 
-    // 模式切换阈值：大误差用P+D，小误差用P+I+D
+    // 模式切换温差阈值：大误差用P+D，小误差用P+I+D
     const float MODE_SWITCH_THRESHOLD = 10.0f;
 
+    // 静态误差强制积分参数
+    const float STATIC_ERR_THRESHOLD = 5.0f;   // 静态误差大于此值时检测
+    const float TEMP_CHANGE_THRESHOLD = 5.0f;   // 1s内温度变化小于此值认为静态
+
     // P+D模式输出上限
-    const float OUTPUT_MAX_PD_MODE = 800.0f;
+    const float OUTPUT_MAX_PD_MODE = 600.0f;
 
     // 积分限幅值（防止积分饱和）
     const float INTEGRAL_LIMIT = 1500.0f;
@@ -40,6 +52,27 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     // P+I+D模式输出上限
     const float OUTPUT_MAX_PID_MODE = 1000.0f;
     // ================================================
+
+    // 更新温度历史（每10ms调用一次，100个样本=1s）
+    adv_pid->temp_history[adv_pid->temp_history_index] = measured;
+    adv_pid->temp_history_index = (adv_pid->temp_history_index + 1) % 100;
+    if (adv_pid->temp_history_count < 100) {
+        adv_pid->temp_history_count++;
+    }
+
+    // 计算1s内温度变化量
+    float temp_change = 0.0f;
+    if (adv_pid->temp_history_count >= 2) {
+        float oldest_temp = adv_pid->temp_history[(adv_pid->temp_history_index + 100 - adv_pid->temp_history_count) % 100];
+        float newest_temp = adv_pid->temp_history[(adv_pid->temp_history_index + 99) % 100];
+        temp_change = (newest_temp >= oldest_temp) ? (newest_temp - oldest_temp) : (oldest_temp - newest_temp);
+    }
+
+    // 静态误差检测：误差>5度 且 1s内温度变化<5度 → 强制开启积分
+    uint8_t force_integral = 0;
+    if (abs_err > STATIC_ERR_THRESHOLD && temp_change < TEMP_CHANGE_THRESHOLD && adv_pid->temp_history_count >= 50) {
+        force_integral = 1;
+    }
 
     if (abs_err < DEADBAND_THRESHOLD) {
         return adv_pid->last_pwm_out;
@@ -52,12 +85,21 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     adv_pid->last_d_out = filtered_D;
     float D_out = adv_pid->Kd * filtered_D;
 
+    float I_out = 0.0f;
     float Output = 0.0f;
 
-    if (abs_err > MODE_SWITCH_THRESHOLD) {
+    if (abs_err > MODE_SWITCH_THRESHOLD || force_integral) {
         Output = P_out + D_out;
         if (Output > OUTPUT_MAX_PD_MODE) Output = OUTPUT_MAX_PD_MODE;
         if (Output < 0.0f) Output = 0.0f;
+        if (force_integral) {
+            adv_pid->integral = adv_pid->integral + adv_pid->err * 0.5f;  // 加速积分累积
+            if (adv_pid->integral > INTEGRAL_LIMIT) adv_pid->integral = INTEGRAL_LIMIT;
+            I_out = adv_pid->Ki * adv_pid->integral;
+            Output = P_out + I_out + D_out;
+            if (Output > OUTPUT_MAX_PID_MODE) Output = OUTPUT_MAX_PID_MODE;
+            if (Output < 0.0f) Output = 0.0f;
+        }
     } else {
         adv_pid->integral = adv_pid->integral + adv_pid->err;
         if (adv_pid->integral > INTEGRAL_LIMIT) {
@@ -65,11 +107,15 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
         } else if (adv_pid->integral < -INTEGRAL_LIMIT) {
             adv_pid->integral = -INTEGRAL_LIMIT;
         }
-        float I_out = adv_pid->Ki * adv_pid->integral;
+        I_out = adv_pid->Ki * adv_pid->integral;
         Output = P_out + I_out + D_out;
         if (Output > OUTPUT_MAX_PID_MODE) Output = OUTPUT_MAX_PID_MODE;
         if (Output < 0.0f) Output = 0.0f;
     }
+
+    adv_pid->speed[0] = P_out;
+    adv_pid->speed[1] = I_out;
+    adv_pid->speed[2] = D_out;
 
     adv_pid->err_prev_1 = adv_pid->err;
     adv_pid->err_prev_2 = adv_pid->err_prev_1;

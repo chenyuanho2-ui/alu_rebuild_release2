@@ -9,6 +9,7 @@
 #include "alu_temp.h"
 #include "alu_main.h"
 #include "dac.h"
+#include "core_cm7.h"
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
@@ -40,6 +41,7 @@ extern uint8_t uart_pid_state;
 
 extern uint8_t need_stop_cleanup;
 extern uint8_t enable_stack_print;
+extern uint8_t enable_print_timing;
 
 extern FuzzyPID_struct fuzzy_pid_TEMP;
 extern AdvPID_struct adv_pid_TEMP;
@@ -60,6 +62,9 @@ void StartTask_Control(void const * argument)
     AdvPID_Init(&adv_pid_TEMP, 40.0f, 0.8f, 125.0f);
     HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+
     uint32_t tick_10ms = 0;
     uint32_t heating_startup_counter = 0;
     uint8_t alu_485_off[] = {0x55, 0x33, 0x01, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x0D};
@@ -72,14 +77,50 @@ void StartTask_Control(void const * argument)
     uint32_t temp_count_1s = 0;  // 1s采样计数
     float temp_avg_1s = 0.0f;  // 1s平均温度
 
+    char heating_print_buf[64] = {0};  // 加热打印内容
+    uint32_t heating_print_max = 0;  // 最长打印耗时(us)
+    uint32_t heating_print_sum = 0;  // 打印耗时累加(us)
+    uint32_t heating_print_cnt = 0;  // 打印次数计数
+
     for(;;)
     {
         osSemaphoreWait(Sem_10msHandle, osWaitForever);  // 等待10ms定时器信号
         tick_10ms++;
 
         // ================================================
-        // 10ms每次: 温度滤波采集 + 累加平均 + 脚踏检测 + PID控制输出
+        // 10ms每次: 加热打印(T,P,I,D) + 计时 + 温度滤波采集 + 累加平均 + 脚踏检测 + PID控制输出
         // ================================================
+        if (is_heating_active == 1) {
+            uint32_t tick_start = DWT->CYCCNT;
+
+            float p_out = 0.0f, i_out = 0.0f, d_out = 0.0f;
+            if (pid_algorithm_type == 0) {
+                p_out = pid_TEMP.speed[0];
+                i_out = pid_TEMP.speed[1];
+                d_out = pid_TEMP.speed[2];
+            } else if (pid_algorithm_type == 1) {
+                p_out = fuzzy_pid_TEMP.speed[0];
+                i_out = fuzzy_pid_TEMP.speed[1];
+                d_out = fuzzy_pid_TEMP.speed[2];
+            } else {
+                p_out = adv_pid_TEMP.speed[0];
+                i_out = adv_pid_TEMP.speed[1];
+                d_out = adv_pid_TEMP.speed[2];
+            }
+
+            snprintf(heating_print_buf, sizeof(heating_print_buf), "T:%.2f,P:%.1f,I:%.1f,D:%.1f",
+                     K_Temperature, p_out, i_out, d_out);
+            printf("%s\r\n", heating_print_buf);
+
+            uint32_t tick_end = DWT->CYCCNT;
+            uint32_t elapsed = (tick_end >= tick_start) ? (tick_end - tick_start) : (0xFFFFFFFF - tick_start + tick_end);
+            heating_print_sum += elapsed;
+            heating_print_cnt++;
+            if (elapsed > heating_print_max) {
+                heating_print_max = elapsed;
+            }
+        }
+
         TempFilter_Process();
         K_Temperature = TempFilter_GetUIAvgTemp();
 
@@ -90,6 +131,8 @@ void StartTask_Control(void const * argument)
 
         if (last_heating_active == 0 && is_heating_active == 1) {
             heating_startup_counter = 0;
+            adv_pid_TEMP.last_measured = (float)K_Temperature;
+            adv_pid_TEMP.last_d_out = 0.0f;
         }
         last_heating_active = is_heating_active;
 
@@ -147,13 +190,6 @@ void StartTask_Control(void const * argument)
         }
 
         // ================================================
-        // 10ms每次: 温度打印 (加热时10ms，非加热时200ms平均)
-        // ================================================
-        if (is_heating_active == 1) {
-            printf("%.2f(on)\r\n", K_Temperature);  // 加热时10ms打印一次
-        }
-
-        // ================================================
         // 200ms间隔: 冷端补偿更新 + SD卡数据写入 + 温度打印(非加热时)
         // ================================================
         if (tick_10ms % 20 == 0) {
@@ -183,7 +219,7 @@ void StartTask_Control(void const * argument)
         }
 
         // ================================================
-        // 1000ms间隔: 计算1s平均温度 + 信号量释放 + 堆栈打印
+        // 1000ms间隔: 计算1s平均温度 + 信号量释放 + 堆栈打印 + 打印最长耗时统计
         // ================================================
         if (tick_10ms % 100 == 0) {
             if (temp_count_1s > 0) {
@@ -192,15 +228,28 @@ void StartTask_Control(void const * argument)
             temp_sum_1s = 0.0f;
             temp_count_1s = 0;
 
-            extern float g_display_temp_avg;  // 屏幕显示用平均温度
+            extern float g_display_temp_avg;
             g_display_temp_avg = temp_avg_1s;
-            osSemaphoreRelease(alu_temperatureHandle);  // 屏幕温度更新，不依赖enable_stack_print
+            osSemaphoreRelease(alu_temperatureHandle);
+
             if (enable_stack_print == 1) {
                 printf("[STACK] aluMain:%u, Control:%u, SubProg:%u\r\n",
                        (unsigned int)uxTaskGetStackHighWaterMark(aluMainHandle),
                        (unsigned int)uxTaskGetStackHighWaterMark(Task_ControlHandle),
                        (unsigned int)uxTaskGetStackHighWaterMark(aluSubProgressHandle));
             }
+
+            if (enable_print_timing == 1 && heating_print_cnt > 0) {
+                float avg_us = (float)heating_print_sum / heating_print_cnt / (SystemCoreClock / 1000000.0f);
+                float max_us = (float)heating_print_max / (SystemCoreClock / 1000000.0f);
+                printf("\r\n\r\n===== PRINT TIMING (1s) =====\r\n");
+                printf("Max: %.1fus(%.0fcycles), Avg: %.1fus(%.0fcycles), Count: %u\r\n",
+                       max_us, (float)heating_print_max, avg_us, (float)heating_print_sum / heating_print_cnt, (unsigned int)heating_print_cnt);
+                printf("=============================\r\n\r\n");
+            }
+            heating_print_max = 0;
+            heating_print_sum = 0;
+            heating_print_cnt = 0;
         }
     }
 }

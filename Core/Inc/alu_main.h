@@ -19,5 +19,6 @@ extern uint8_t laser_test_state;
 extern float target_laser_current;
 extern float target_laser_pwm;
 extern float g_display_temp_avg;
+extern uint8_t enable_print_timing;
 
 #endif /* __ALU_MAIN_H */

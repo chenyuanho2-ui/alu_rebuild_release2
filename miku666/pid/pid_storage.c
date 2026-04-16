@@ -10,6 +10,9 @@ extern FuzzyPID_struct fuzzy_pid_TEMP;
 extern AdvPID_struct adv_pid_TEMP;
 
 void SD_Save_PID_Config(float kp, float ki, float kd) {
+    extern uint8_t sd_pid_save_enable;
+    if (sd_pid_save_enable == 0) return;
+
     FRESULT res;
     FIL file;
     UINT bw;

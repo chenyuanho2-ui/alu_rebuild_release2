@@ -90,7 +90,7 @@ extern osSemaphoreId Sem_10msHandle;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	SCB->VTOR = 0X90000000;       /* 向量表重定位到片外 */
+	SCB->VTOR = 0X90000000;       /* 程序大小超过flash大小，向量表重定位到片外 */
 	
 	// Icache开启后一定要关闭缓存回写刷新,Dcache开启后一定要清理,否则会导致FatFs挂载失败
   /* USER CODE END 1 */

@@ -108,8 +108,8 @@ void StartTask_Control(void const * argument)
                 d_out = adv_pid_TEMP.speed[2];
             }
 
-            snprintf(heating_print_buf, sizeof(heating_print_buf), "T:%.2f,P:%.1f,I:%.1f,D:%.1f",
-                     K_Temperature, p_out, i_out, d_out);
+            snprintf(heating_print_buf, sizeof(heating_print_buf), "T:%.2f,%.1f,%.1f,%.1f,%.1f",
+                     K_Temperature, pwm_percent * 100.0f, p_out, i_out, d_out);
             printf("%s\r\n", heating_print_buf);
 
             uint32_t tick_end = DWT->CYCCNT;

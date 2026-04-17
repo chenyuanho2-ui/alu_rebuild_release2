@@ -30,7 +30,7 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     // ================================================
     // 高级PID可调参数
     // ================================================
-    // 死区阈值：误差小于此值时不调节，保持上次输出
+    // 死区阈值：误差小于此值时不调节，保持上次输出；注意对应的温度抖动
     const float DEADBAND_THRESHOLD = 0.5f;
 
     // 微分滤波器系数：D值 = 0.6*上次D输出 + 0.4*原始D值 (滤波平滑)
@@ -48,7 +48,7 @@ float AdvPID_Calculate(AdvPID_struct* adv_pid, float target, float measured) {
     const float OUTPUT_MAX_PD_MODE = 750.0f;
 
     // 积分限幅值（防止积分饱和）
-    const float INTEGRAL_LIMIT = 1500.0f;
+    const float INTEGRAL_LIMIT = 1000.0f;
 
     // P+I+D模式输出上限
     const float OUTPUT_MAX_PID_MODE = 1000.0f;

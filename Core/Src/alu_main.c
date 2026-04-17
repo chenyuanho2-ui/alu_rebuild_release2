@@ -36,7 +36,7 @@ uint8_t pid_algorithm_type = 2;    // PID算法类型：0=标准PID，1=模糊PI
 uint8_t enable_pid_tune = 1;       // PID串口调试使能：0=禁用，1=启用(通过set_pid指令调节)
 uint8_t enable_laser_test = 0;     // 激光测试模式使能：0=禁用，1=启用(通过laseron指令)
 uint8_t sd_record_enable = 1;             // SD卡温度数据记录使能：1=记录，0=禁用
-uint8_t sd_pid_save_enable = 1;           // SD卡PID参数保存使能：1=保存，0=禁用
+uint8_t sd_pid_save_enable = 0;           // SD卡PID参数保存使能：1=保存，0=禁用
 uint8_t enable_stack_print = 0;          // 堆栈打印使能：0=禁用，1=启用(每1s打印任务堆栈)
 uint8_t enable_print_timing = 0;         // 打印耗时统计使能：0=禁用，1=启用(每1s打印最长打印耗时和内容)
 

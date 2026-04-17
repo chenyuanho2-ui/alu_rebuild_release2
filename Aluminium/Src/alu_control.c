@@ -140,7 +140,7 @@ extern uint8_t laser_test_state;
 // 串口PID交互新增全局变量定义
 // ==========================================
 QueueHandle_t UartRxQueue = NULL;
-uint8_t uart_pid_state = 0;
+// uart_pid_state is defined in alu_main.c
 float temp_Kp = 0.0f, temp_Ki = 0.0f, temp_Kd = 0.0f;
 
 // ====================================================================

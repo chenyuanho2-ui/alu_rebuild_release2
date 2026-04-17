@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "main.h"
+#include "pid.h"
 
 // 模糊PID结构体
 typedef struct {
@@ -15,17 +16,9 @@ typedef struct {
     float err_prev_1;     // 上次误差
     float err_prev_2;     // 上上次误差 (用于积分)
     
-    // 实际输出的PID参数
-    float Kp;
-    float Ki;
-    float Kd;
     float speed[3];       // 输出的P, I, D分量
 
     // ================= 以下为你需要填写的“魔法参数” =================
-    float Kp_base;        // 基础Kp (你原本调好的普通Kp)
-    float Ki_base;        // 基础Ki (你原本调好的普通Ki)
-    float Kd_base;        // 基础Kd (你原本调好的普通Kd)
-
     float e_max;          // 误差的最大范围 (例如：最大温差设定为 50度)
     float ec_max;         // 误差变化率的最大范围 (例如：10ms内温度最大变化 2度)
 

@@ -65,11 +65,6 @@ void FuzzyPID_init(FuzzyPID_struct* fuzzy_pid) {
     fuzzy_pid->err_prev_1 = 0.0f;
     fuzzy_pid->err_prev_2 = 0.0f;
     fuzzy_pid->speed[0] = fuzzy_pid->speed[1] = fuzzy_pid->speed[2] = 0.0f;
-    
-    // 初始化你原本的普通PID参数 (参考你之前设定的40, 0.8, 125)
-    fuzzy_pid->Kp_base = 40.0f;
-    fuzzy_pid->Ki_base = 0.8f;
-    fuzzy_pid->Kd_base = 125.0f;
 
     // ----- 需要你根据实际情况微调的边界参数 -----
     fuzzy_pid->e_max = 50.0f;     // 默认：温差50度算“极大误差”
@@ -113,20 +108,20 @@ float FuzzyPID_Calculate(FuzzyPID_struct* fuzzy_pid, float value_thres, float va
     float delta_Ki = rule_Ki[e_index][ec_index];
     float delta_Kd = rule_Kd[e_index][ec_index];
     
-    fuzzy_pid->Kp = fuzzy_pid->Kp_base + (delta_Kp * fuzzy_pid->Kp_weight);
-    fuzzy_pid->Ki = fuzzy_pid->Ki_base + (delta_Ki * fuzzy_pid->Ki_weight);
-    fuzzy_pid->Kd = fuzzy_pid->Kd_base + (delta_Kd * fuzzy_pid->Kd_weight);
+    float Kp = pid_base.Kp + (delta_Kp * fuzzy_pid->Kp_weight);
+    float Ki = pid_base.Ki + (delta_Ki * fuzzy_pid->Ki_weight);
+    float Kd = pid_base.Kd + (delta_Kd * fuzzy_pid->Kd_weight);
     
     // 保证PID不为负数
-    if(fuzzy_pid->Kp < 0.0f) fuzzy_pid->Kp = 0.0f;
-    if(fuzzy_pid->Ki < 0.0f) fuzzy_pid->Ki = 0.0f;
-    if(fuzzy_pid->Kd < 0.0f) fuzzy_pid->Kd = 0.0f;
+    if(Kp < 0.0f) Kp = 0.0f;
+    if(Ki < 0.0f) Ki = 0.0f;
+    if(Kd < 0.0f) Kd = 0.0f;
 
     // 5. 执行标准PID运算
-    float speed_p = fuzzy_pid->Kp * fuzzy_pid->err;
+    float speed_p = Kp * fuzzy_pid->err;
     fuzzy_pid->err_prev_2 = fuzzy_pid->err_prev_2 + fuzzy_pid->err;
-    float speed_i = fuzzy_pid->Ki * fuzzy_pid->err_prev_2;
-    float speed_d = fuzzy_pid->Kd * ec;
+    float speed_i = Ki * fuzzy_pid->err_prev_2;
+    float speed_d = Kd * ec;
     
     fuzzy_pid->speed[0] = speed_p;
     fuzzy_pid->speed[1] = speed_i;

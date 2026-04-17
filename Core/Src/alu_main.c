@@ -6,6 +6,7 @@
 #include "pid_storage.h"
 #include "fuzzy_pid.h"
 #include "advanced_pid.h"
+#include "pid.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,7 @@ uint8_t pid_algorithm_type = 2;    // PID算法类型：0=标准PID，1=模糊PI
 uint8_t enable_pid_tune = 1;       // PID串口调试使能：0=禁用，1=启用(通过set_pid指令调节)
 uint8_t enable_laser_test = 0;     // 激光测试模式使能：0=禁用，1=启用(通过laseron指令)
 uint8_t sd_record_enable = 1;             // SD卡温度数据记录使能：1=记录，0=禁用
-uint8_t sd_pid_save_enable = 0;           // SD卡PID参数保存使能：1=保存，0=禁用
+uint8_t sd_pid_save_enable = 1;           // SD卡PID参数保存使能：1=保存，0=禁用
 uint8_t enable_stack_print = 0;          // 堆栈打印使能：0=禁用，1=启用(每1s打印任务堆栈)
 uint8_t enable_print_timing = 0;         // 打印耗时统计使能：0=禁用，1=启用(每1s打印最长打印耗时和内容)
 
@@ -51,6 +52,15 @@ volatile uint32_t heating_num_count = 0;  // 加热计数：CSV数据行号，�
 uint8_t need_stop_cleanup = 0;           // 停止加热清理标志：脚踏松开时置1，触发数据保存和界面切换
 uint8_t is_serial_interacting = 0;      // 串口交互状态标志：防止加热时串口指令冲突
 uint8_t laser_test_state = 0;           // 激光测试状态机：0=空闲，1=输入电流PWM，2=确认，3=就绪
+
+// PID调试状态机
+uint8_t uart_pid_state = 0;           // 基础PID状态：0=空闲，1=输入参数，2=确认
+uint8_t uart_apid_state = 0;          // 高级PID状态：0=空闲，1=菜单，2=输入参数
+uint8_t uart_fpid_state = 0;          // 模糊PID状态：0=空闲，1=菜单，2=输入参数
+uint8_t uart_pidmode_state = 0;       // PID模式切换状态：0=空闲，1=输入模式
+uint8_t has_valid_input = 0;           // 有效输入标志
+uint8_t current_apid_param = 0;        // 当前高级PID参数编号
+uint8_t current_fpid_param = 0;        // 当前模糊PID参数编号
 char current_file_name[32] = {0};      // 当前数据文件名，格式: "data_N.csv"
 
 // ================================================
@@ -169,17 +179,68 @@ void AluMain(void const * argument)
                       if (enable_pid_tune == 1 && is_heating_active == 0) {
                           is_serial_interacting = 1;
                           uart_pid_state = 1;
+                          has_valid_input = 0;
                           printf("PID Tuning Mode ON\r\n");
-                          printf("Current: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_TEMP.Kp, pid_TEMP.Ki, pid_TEMP.Kd);
+                          printf("Current: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", pid_base.Kp, pid_base.Ki, pid_base.Kd);
                           printf("Enter new params (format: Kp,Ki,Kd):\r\n");
+                          printf("Enter N to exit\r\n");
                       } else if (enable_pid_tune == 0) {
                           printf("Error: PID tuning not enabled (set enable_pid_tune=1)\r\n");
                       } else {
                           printf("Error: Cannot tune PID while heating active\r\n");
                       }
+                  } else if (strcmp(uart_buf, "apid") == 0 || strcmp(uart_buf, "APID") == 0) {
+                      if (enable_pid_tune == 1 && is_heating_active == 0) {
+                          is_serial_interacting = 1;
+                          uart_apid_state = 1;
+                          has_valid_input = 0;
+                          printf("Advanced PID Tuning Mode ON\r\n");
+                          printf("1. Deadband Threshold (0.5)\r\n");
+                          printf("2. Mode Switch Threshold (10.0)\r\n");
+                          printf("3. Static Error Threshold (5.0)\r\n");
+                          printf("4. Temp Change Threshold (5.0)\r\n");
+                          printf("5. Output Max PD Mode (750.0)\r\n");
+                          printf("6. Integral Limit (1000.0)\r\n");
+                          printf("7. Output Max PID Mode (1000.0)\r\n");
+                          printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                      } else if (enable_pid_tune == 0) {
+                          printf("Error: PID tuning not enabled (set enable_pid_tune=1)\r\n");
+                      } else {
+                          printf("Error: Cannot tune PID while heating active\r\n");
+                      }
+                  } else if (strcmp(uart_buf, "fpid") == 0 || strcmp(uart_buf, "FPID") == 0) {
+                      if (enable_pid_tune == 1 && is_heating_active == 0) {
+                          is_serial_interacting = 1;
+                          uart_fpid_state = 1;
+                          has_valid_input = 0;
+                          printf("Fuzzy PID Tuning Mode ON\r\n");
+                          printf("1. E Max (50.0)\r\n");
+                          printf("2. EC Max (5.0)\r\n");
+                          printf("3. Kp Weight (5.0)\r\n");
+                          printf("4. Ki Weight (0.1)\r\n");
+                          printf("5. Kd Weight (10.0)\r\n");
+                          printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                      } else if (enable_pid_tune == 0) {
+                          printf("Error: PID tuning not enabled (set enable_pid_tune=1)\r\n");
+                      } else {
+                          printf("Error: Cannot tune PID while heating active\r\n");
+                      }
+                  } else if (strcmp(uart_buf, "pidmode") == 0 || strcmp(uart_buf, "PIDMODE") == 0) {
+                      if (is_heating_active == 0) {
+                          is_serial_interacting = 1;
+                          uart_pidmode_state = 1;
+                          printf("PID Mode Switch\r\n");
+                          printf("Current mode: %d\r\n", pid_algorithm_type);
+                          printf("Enter 0 (Basic), 1 (Fuzzy), 2 (Advanced):\r\n");
+                      } else {
+                          printf("Error: Cannot switch mode while heating active\r\n");
+                      }
                   } else if (strcmp(uart_buf, "help") == 0 || strcmp(uart_buf, "HELP") == 0) {
                       printf("=== Commands ===\r\n");
-                      printf("pid - Enter PID tuning mode\r\n");
+                      printf("pid - Enter basic PID tuning mode\r\n");
+                      printf("apid - Enter advanced PID tuning mode\r\n");
+                      printf("fpid - Enter fuzzy PID tuning mode\r\n");
+                      printf("pidmode - Switch PID algorithm mode\r\n");
                       printf("laseron - Enter laser test mode\r\n");
                       printf("help - Show this message\r\n");
                   }
@@ -220,37 +281,208 @@ void AluMain(void const * argument)
                   }
               }
 
+              // 基础PID调试状态机
               if (uart_pid_state == 1 && laser_test_state == 0) {
-                  if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_pid_state = 0;
+                      is_serial_interacting = 0;
+                      printf("PID tuning cancelled\r\n");
+                  } else if (sscanf(uart_buf, "%f,%f,%f", &temp_Kp, &temp_Ki, &temp_Kd) == 3) {
                       uart_pid_state = 2;
+                      has_valid_input = 1;
                       printf("Parsed: Kp=%.2f, Ki=%.2f, Kd=%.2f\r\n", temp_Kp, temp_Ki, temp_Kd);
-                      printf("Confirm [Y], Re-enter [N]:\r\n");
+                      printf("Confirm save [Y], Re-enter [N]:\r\n");
                   } else {
                       printf("Format error, enter: Kp,Ki,Kd (e.g., 40,0.8,125)\r\n");
                   }
               } else if (uart_pid_state == 2 && laser_test_state == 0) {
-                  if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
-                      pid_TEMP.Kp = temp_Kp;
-                      pid_TEMP.Ki = temp_Ki;
-                      pid_TEMP.Kd = temp_Kd;
-
-                      adv_pid_TEMP.Kp = temp_Kp;
-                      adv_pid_TEMP.Ki = temp_Ki;
-                      adv_pid_TEMP.Kd = temp_Kd;
-
-                      fuzzy_pid_TEMP.Kp = temp_Kp;
-                      fuzzy_pid_TEMP.Ki = temp_Ki;
-                      fuzzy_pid_TEMP.Kd = temp_Kd;
-
-                      SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
-                      printf("Success, PID updated\r\n");
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
                       uart_pid_state = 0;
                       is_serial_interacting = 0;
-                  } else if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
-                      printf("Cancelled. Enter new params:\r\n");
-                      uart_pid_state = 1;
+                      printf("PID tuning cancelled\r\n");
+                  } else if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                      if (has_valid_input) {
+                          pid_base.Kp = temp_Kp;
+                          pid_base.Ki = temp_Ki;
+                          pid_base.Kd = temp_Kd;
+                          SD_Save_PID_Config(temp_Kp, temp_Ki, temp_Kd);
+                          printf("Success, PID updated\r\n");
+                          uart_pid_state = 0;
+                          is_serial_interacting = 0;
+                      } else {
+                          printf("No valid input detected. Press N to exit or enter parameters first\r\n");
+                      }
                   } else {
                       printf("Reply Y or N\r\n");
+                  }
+              }
+
+              // 高级PID调试状态机
+              if (uart_apid_state == 1 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_apid_state = 0;
+                      is_serial_interacting = 0;
+                      printf("Advanced PID tuning cancelled\r\n");
+                  } else if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                      if (has_valid_input) {
+                          // Save advanced PID parameters
+                          SD_Save_PID_Advanced();
+                          printf("Advanced PID parameters saved\r\n");
+                          uart_apid_state = 0;
+                          is_serial_interacting = 0;
+                      } else {
+                          printf("No valid input detected. Press N to exit or modify parameters first\r\n");
+                      }
+                  } else if (sscanf(uart_buf, "%hhu", &current_apid_param) == 1 && current_apid_param >= 1 && current_apid_param <= 7) {
+                      uart_apid_state = 2;
+                      printf("Enter new value for parameter %d:\r\n", current_apid_param);
+                  } else {
+                      printf("Invalid input. Enter parameter number (1-7), Y to save exit, N to exit\r\n");
+                  }
+              } else if (uart_apid_state == 2 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_apid_state = 1;
+                      printf("Advanced PID Tuning Mode\r\n");
+                      printf("1. Deadband Threshold (0.5)\r\n");
+                      printf("2. Mode Switch Threshold (10.0)\r\n");
+                      printf("3. Static Error Threshold (5.0)\r\n");
+                      printf("4. Temp Change Threshold (5.0)\r\n");
+                      printf("5. Output Max PD Mode (750.0)\r\n");
+                      printf("6. Integral Limit (1000.0)\r\n");
+                      printf("7. Output Max PID Mode (1000.0)\r\n");
+                      printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                  } else {
+                      float new_value = 0.0f;
+                      if (sscanf(uart_buf, "%f", &new_value) == 1) {
+                          has_valid_input = 1;
+                          // Update the corresponding parameter
+                          switch (current_apid_param) {
+                              case 1:
+                                  adv_pid_TEMP.deadband_threshold = new_value;
+                                  break;
+                              case 2:
+                                  adv_pid_TEMP.mode_switch_threshold = new_value;
+                                  break;
+                              case 3:
+                                  adv_pid_TEMP.static_err_threshold = new_value;
+                                  break;
+                              case 4:
+                                  adv_pid_TEMP.temp_change_threshold = new_value;
+                                  break;
+                              case 5:
+                                  adv_pid_TEMP.output_max_pd_mode = new_value;
+                                  break;
+                              case 6:
+                                  adv_pid_TEMP.integral_limit = new_value;
+                                  break;
+                              case 7:
+                                  adv_pid_TEMP.output_max_pid_mode = new_value;
+                                  break;
+                          }
+                          printf("Parameter %d updated to %.2f\r\n", current_apid_param, new_value);
+                          uart_apid_state = 1;
+                          printf("Advanced PID Tuning Mode\r\n");
+                          printf("1. Deadband Threshold (%.2f)\r\n", adv_pid_TEMP.deadband_threshold);
+                          printf("2. Mode Switch Threshold (%.2f)\r\n", adv_pid_TEMP.mode_switch_threshold);
+                          printf("3. Static Error Threshold (%.2f)\r\n", adv_pid_TEMP.static_err_threshold);
+                          printf("4. Temp Change Threshold (%.2f)\r\n", adv_pid_TEMP.temp_change_threshold);
+                          printf("5. Output Max PD Mode (%.2f)\r\n", adv_pid_TEMP.output_max_pd_mode);
+                          printf("6. Integral Limit (%.2f)\r\n", adv_pid_TEMP.integral_limit);
+                          printf("7. Output Max PID Mode (%.2f)\r\n", adv_pid_TEMP.output_max_pid_mode);
+                          printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                      } else {
+                          printf("Invalid value. Enter a number:\r\n");
+                      }
+                  }
+              }
+
+              // 模糊PID调试状态机
+              if (uart_fpid_state == 1 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_fpid_state = 0;
+                      is_serial_interacting = 0;
+                      printf("Fuzzy PID tuning cancelled\r\n");
+                  } else if (uart_buf[0] == 'Y' || uart_buf[0] == 'y') {
+                      if (has_valid_input) {
+                          // Save fuzzy PID parameters
+                          SD_Save_PID_Fuzzy();
+                          printf("Fuzzy PID parameters saved\r\n");
+                          uart_fpid_state = 0;
+                          is_serial_interacting = 0;
+                      } else {
+                          printf("No valid input detected. Press N to exit or modify parameters first\r\n");
+                      }
+                  } else if (sscanf(uart_buf, "%hhu", &current_fpid_param) == 1 && current_fpid_param >= 1 && current_fpid_param <= 5) {
+                      uart_fpid_state = 2;
+                      printf("Enter new value for parameter %d:\r\n", current_fpid_param);
+                  } else {
+                      printf("Invalid input. Enter parameter number (1-5), Y to save exit, N to exit\r\n");
+                  }
+              } else if (uart_fpid_state == 2 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_fpid_state = 1;
+                      printf("Fuzzy PID Tuning Mode\r\n");
+                      printf("1. E Max (50.0)\r\n");
+                      printf("2. EC Max (5.0)\r\n");
+                      printf("3. Kp Weight (5.0)\r\n");
+                      printf("4. Ki Weight (0.1)\r\n");
+                      printf("5. Kd Weight (10.0)\r\n");
+                      printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                  } else {
+                      float new_value = 0.0f;
+                      if (sscanf(uart_buf, "%f", &new_value) == 1) {
+                          has_valid_input = 1;
+                          // Update the corresponding parameter
+                          switch (current_fpid_param) {
+                              case 1:
+                                  fuzzy_pid_TEMP.e_max = new_value;
+                                  break;
+                              case 2:
+                                  fuzzy_pid_TEMP.ec_max = new_value;
+                                  break;
+                              case 3:
+                                  fuzzy_pid_TEMP.Kp_weight = new_value;
+                                  break;
+                              case 4:
+                                  fuzzy_pid_TEMP.Ki_weight = new_value;
+                                  break;
+                              case 5:
+                                  fuzzy_pid_TEMP.Kd_weight = new_value;
+                                  break;
+                          }
+                          printf("Parameter %d updated to %.2f\r\n", current_fpid_param, new_value);
+                          uart_fpid_state = 1;
+                          printf("Fuzzy PID Tuning Mode\r\n");
+                          printf("1. E Max (%.1f)\r\n", fuzzy_pid_TEMP.e_max);
+                          printf("2. EC Max (%.1f)\r\n", fuzzy_pid_TEMP.ec_max);
+                          printf("3. Kp Weight (%.1f)\r\n", fuzzy_pid_TEMP.Kp_weight);
+                          printf("4. Ki Weight (%.2f)\r\n", fuzzy_pid_TEMP.Ki_weight);
+                          printf("5. Kd Weight (%.1f)\r\n", fuzzy_pid_TEMP.Kd_weight);
+                          printf("Enter parameter number to modify, Y to save exit, N to exit\r\n");
+                      } else {
+                          printf("Invalid value. Enter a number:\r\n");
+                      }
+                  }
+              }
+
+              // PID模式切换状态机
+              if (uart_pidmode_state == 1 && laser_test_state == 0) {
+                  if (uart_buf[0] == 'N' || uart_buf[0] == 'n') {
+                      uart_pidmode_state = 0;
+                      is_serial_interacting = 0;
+                      printf("Mode switch cancelled\r\n");
+                  } else {
+                      int new_mode = -1;
+                      if (sscanf(uart_buf, "%d", &new_mode) == 1 && new_mode >= 0 && new_mode <= 2) {
+                          pid_algorithm_type = new_mode;
+                          // Save mode to SD card
+                          SD_Save_PID_Mode();
+                          printf("PID mode changed to %d\r\n", new_mode);
+                          uart_pidmode_state = 0;
+                          is_serial_interacting = 0;
+                      } else {
+                          printf("Invalid mode. Enter 0 (Basic), 1 (Fuzzy), 2 (Advanced):\r\n");
+                      }
                   }
               }
           }

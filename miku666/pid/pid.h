@@ -7,15 +7,22 @@ extern "C" {
 
 #include "main.h"
 
+// 基础PID参数结构体
+typedef struct {
+    float Kp;
+    float Ki;
+    float Kd;
+} PID_Base_TypeDef;
+
+// 全局共享的基础PID参数
+extern PID_Base_TypeDef pid_base;
+
 typedef struct {
     float v_target;
     float v_current;
     float err;
     float err_prev_1;
     float err_prev_2;
-    float Kp;
-    float Ki;
-    float Kd;
     float speed[3];
 } PID_struct;
 

@@ -57,8 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define btn_foot_Pin GPIO_PIN_4
-#define btn_foot_GPIO_Port GPIOD
+#define TIM8_PWM_Pin GPIO_PIN_6
+#define TIM8_PWM_GPIO_Port GPIOI
 #define SPI2_CS_ADS_Pin GPIO_PIN_6
 #define SPI2_CS_ADS_GPIO_Port GPIOD
 #define SPI2_CS_T_Pin GPIO_PIN_3
@@ -71,8 +71,6 @@ void Error_Handler(void);
 #define SDIO_detect_GPIO_Port GPIOH
 #define LED_Pin GPIO_PIN_13
 #define LED_GPIO_Port GPIOC
-#define TIM1_PWM_Pin GPIO_PIN_11
-#define TIM1_PWM_GPIO_Port GPIOA
 #define Touch_RST_Pin GPIO_PIN_10
 #define Touch_RST_GPIO_Port GPIOI
 #define Touch_INT_Pin GPIO_PIN_11
@@ -81,16 +79,28 @@ void Error_Handler(void);
 #define Touch_IIC_SDA_GPIO_Port GPIOG
 #define Touch_IIC_SCL_Pin GPIO_PIN_3
 #define Touch_IIC_SCL_GPIO_Port GPIOG
+#define btn_foot_Pin GPIO_PIN_11
+#define btn_foot_GPIO_Port GPIOH
+#define btn_4_Pin GPIO_PIN_7
+#define btn_4_GPIO_Port GPIOA
+#define btn_3_Pin GPIO_PIN_5
+#define btn_3_GPIO_Port GPIOA
 #define LTDC_BackLight_Pin GPIO_PIN_6
 #define LTDC_BackLight_GPIO_Port GPIOH
-#define btn_1_Pin GPIO_PIN_12
-#define btn_1_GPIO_Port GPIOB
-#define btn_4_Pin GPIO_PIN_15
-#define btn_4_GPIO_Port GPIOB
-#define btn_2_Pin GPIO_PIN_13
-#define btn_2_GPIO_Port GPIOB
-#define btn_3_Pin GPIO_PIN_14
-#define btn_3_GPIO_Port GPIOB
+#define btn_11_Pin GPIO_PIN_12
+#define btn_11_GPIO_Port GPIOB
+#define btn_44_Pin GPIO_PIN_15
+#define btn_44_GPIO_Port GPIOB
+#define btn_1_Pin GPIO_PIN_3
+#define btn_1_GPIO_Port GPIOA
+#define btn_2_Pin GPIO_PIN_4
+#define btn_2_GPIO_Port GPIOA
+#define buzzer_Pin GPIO_PIN_0
+#define buzzer_GPIO_Port GPIOB
+#define btn_22_Pin GPIO_PIN_13
+#define btn_22_GPIO_Port GPIOB
+#define btn_33_Pin GPIO_PIN_14
+#define btn_33_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

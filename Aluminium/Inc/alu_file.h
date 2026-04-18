@@ -23,6 +23,8 @@ void Alu_SD_write(BYTE WriteBuffer[],int Buffer_Size, const char* filename);
 void Alu_SD_del_file(const char* filename);
 
 int Alu_SD_csv_num(const TCHAR *sniff_path);
+int Alu_SD_GetNextFileNum(void);
+void Alu_SD_SyncCfgAfterDelete(void);
 
 char *Alu_strndup(const char *str, size_t n);
 char *Alu_strcopy(const char *str);

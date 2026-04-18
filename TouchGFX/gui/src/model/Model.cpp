@@ -5,6 +5,7 @@
 
 #include "cmsis_os.h"
 #include "main.h"
+#include "alu_file.h"
 
 extern osSemaphoreId alu_chooseHandle;         // 选择是温度还是功率
 extern osSemaphoreId alu_thresholdHandle;      // 功率阈值设置信号量
@@ -78,5 +79,6 @@ void Model::alu_do_back_delFile(int file_index,const char * file_name)
 	printf("remove: %d ",file_index);
 	printf("File: %s\n", file_name);
 	Alu_SD_del_file(file_name);
+	Alu_SD_SyncCfgAfterDelete();
 #endif
 }

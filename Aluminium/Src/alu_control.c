@@ -135,6 +135,10 @@ extern volatile uint32_t heating_num_count;
 extern char current_file_name[32];
 extern PID_struct pid_TEMP;
 extern uint8_t laser_test_state;
+extern uint8_t pid_algorithm_type;
+extern PID_Base_TypeDef pid_base;
+extern FuzzyPID_struct fuzzy_pid_TEMP;
+extern AdvPID_struct adv_pid_TEMP;
 
 // ==========================================
 // 串口PID交互新增全局变量定义
@@ -173,15 +177,38 @@ int active_key_foot_start(uint8_t *data_485, float temp_thres, float power_thres
 
 	// 3. 创建本次加热的全新 CSV 数据文件(sd_record_enable=1时)
 	if (sd_record_enable) {
-		num_file = Alu_SD_csv_num("/") + 1; 
-		sprintf(current_file_name, "data_%d.csv", num_file);  
+		num_file = Alu_SD_GetNextFileNum();
+		sprintf(current_file_name, "data_%d.csv", num_file);
 
 		// 通知 UI 刷新当前阈值
 		osSemaphoreRelease(alu_thresholdHandle);
 
-		// 4. 写入 CSV 的第一行表头
-		uint8_t BufferTitle[] = "index,temperature,speed_p,speed_i,speed_d";
-		Alu_SD_write(BufferTitle, sizeof(BufferTitle), current_file_name);
+		// 4. 写入 PID 配置表头（第一行）
+		char pidCfgBuf[256] = {0};
+		if (pid_algorithm_type == 0) {
+			snprintf(pidCfgBuf, sizeof(pidCfgBuf),
+				"Mode: Standard PID, Kp: %.2f, Ki: %.2f, Kd: %.2f\n",
+				pid_base.Kp, pid_base.Ki, pid_base.Kd);
+		} else if (pid_algorithm_type == 1) {
+			snprintf(pidCfgBuf, sizeof(pidCfgBuf),
+				"Mode: Fuzzy PID, Kp: %.2f, Ki: %.2f, Kd: %.2f, e_max: %.1f, ec_max: %.1f, Kp_w: %.1f, Ki_w: %.2f, Kd_w: %.1f\n",
+				pid_base.Kp, pid_base.Ki, pid_base.Kd,
+				fuzzy_pid_TEMP.e_max, fuzzy_pid_TEMP.ec_max,
+				fuzzy_pid_TEMP.Kp_weight, fuzzy_pid_TEMP.Ki_weight, fuzzy_pid_TEMP.Kd_weight);
+		} else {
+			snprintf(pidCfgBuf, sizeof(pidCfgBuf),
+				"Mode: Advanced PID, Kp: %.2f, Ki: %.2f, Kd: %.2f, deadband: %.2f, mode_sw: %.2f, static_err: %.2f, temp_chg: %.2f, out_max_pd: %.2f, int_limit: %.2f, out_max_pid: %.2f\n",
+				pid_base.Kp, pid_base.Ki, pid_base.Kd,
+				adv_pid_TEMP.deadband_threshold, adv_pid_TEMP.mode_switch_threshold,
+				adv_pid_TEMP.static_err_threshold, adv_pid_TEMP.temp_change_threshold,
+				adv_pid_TEMP.output_max_pd_mode, adv_pid_TEMP.integral_limit,
+				adv_pid_TEMP.output_max_pid_mode);
+		}
+		Alu_SD_write((uint8_t*)pidCfgBuf, strlen(pidCfgBuf), current_file_name);
+
+		// 5. 写入 CSV 列标题（第二行）
+		const char* BufferTitle = "index,temperature,speed_p,speed_i,speed_d,pwm_out";
+		Alu_SD_write((uint8_t*)BufferTitle, strlen(BufferTitle), current_file_name);
 	}
     
 	// 5. 初始化并清空 PID 历史数据

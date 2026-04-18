@@ -208,9 +208,10 @@ void StartTask_Control(void const * argument)
 
             if (is_heating_active == 1) {
                 char BufferWrite[64] = {0};
-                sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f",
+                sprintf(BufferWrite, "\n%d,%.2f,%.3f,%.3f,%.3f,%.1f",
                     heating_num_count, temp_avg_200ms,
-                    pid_TEMP.speed[0], pid_TEMP.speed[1], pid_TEMP.speed[2]);
+                    pid_TEMP.speed[0], pid_TEMP.speed[1], pid_TEMP.speed[2],
+                    pwm_percent * 100.0f);
 
                 if (sd_record_enable && SDWriteQueueHandle != NULL) {
                     xQueueSend(SDWriteQueueHandle, BufferWrite, 0);

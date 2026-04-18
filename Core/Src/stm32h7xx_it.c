@@ -63,6 +63,7 @@ extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim17;
+extern volatile uint8_t laser_fault_flag;
 
 /* USER CODE BEGIN EV */
 
@@ -279,5 +280,23 @@ void MDMA_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+void HAL_TIMEx_BreakCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM8)
+  {
+    extern uint8_t hardware_break_enabled;
+    if (hardware_break_enabled) {
+      // 双重保险，强制将TIM8_CH2的占空比设为0
+      __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, 0);
+      
+      // 设置故障标志位
+      if (laser_fault_flag == 0)
+      {
+        laser_fault_flag = 1;
+      }
+    }
+  }
+}
 
 /* USER CODE END 1 */

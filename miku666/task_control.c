@@ -1,5 +1,7 @@
 #include "task_control.h"
 #include "temp_filter.h"
+
+volatile uint8_t laser_fault_flag = 0;
 #include "pid.h"
 #include "fuzzy_pid.h"
 #include "advanced_pid.h"
@@ -16,7 +18,7 @@
 #include "queue.h"
 
 extern UART_HandleTypeDef huart4;
-extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim8;
 
 extern QueueHandle_t SDWriteQueueHandle;
 extern osSemaphoreId Sem_10msHandle;
@@ -152,10 +154,38 @@ void StartTask_Control(void const * argument)
                 HAL_UART_Transmit(&huart4, alu_485_off, 10, 100);
                 HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
 
-                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1);
+                __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, 1);
                 DAC_SetLaserCurrent(0.0f);
                 need_stop_cleanup = 1;
             }
+        }
+
+        // ================================================
+        // 故障检测与处理
+        // ================================================
+        extern uint8_t hardware_break_enabled;
+        if (laser_fault_flag == 1 && hardware_break_enabled) {
+            laser_fault_flag = 2; // 防止重复执行
+            
+            // 启动蜂鸣器
+            HAL_GPIO_WritePin(buzzer_GPIO_Port, buzzer_Pin, GPIO_PIN_RESET);
+            osDelay(200);
+            // 关闭蜂鸣器
+            HAL_GPIO_WritePin(buzzer_GPIO_Port, buzzer_Pin, GPIO_PIN_SET);
+            
+            // 强制退出加热模式
+            is_heating_active = 0;
+            
+            // 停止PWM输出
+            __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, 0);
+            DAC_SetLaserCurrent(0.0f);
+            
+            // 发送关闭信号
+            HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_SET);
+            HAL_UART_Transmit(&huart4, alu_485_off, 10, 100);
+            HAL_GPIO_WritePin(flag_485_GPIO_Port, flag_485_Pin, GPIO_PIN_RESET);
+            
+            need_stop_cleanup = 1;
         }
 
         // ================================================
@@ -172,7 +202,7 @@ void StartTask_Control(void const * argument)
                 extern float target_laser_current;
                 extern float target_laser_pwm;
                 DAC_SetLaserCurrent(target_laser_current);
-                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, (uint32_t)target_laser_pwm);
+                __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, (uint32_t)target_laser_pwm);
                 pwm_value = target_laser_pwm;
             } else {
                 if (pid_algorithm_type == 0) {
@@ -182,12 +212,12 @@ void StartTask_Control(void const * argument)
                 } else {
                     pwm_value = AdvPID_Calculate(&adv_pid_TEMP, temp_thres, (float)K_Temperature);
                 }
-                __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, (uint32_t)pwm_value);
+                __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, (uint32_t)pwm_value);
             }
 
             pwm_percent = pwm_value / 1000.0f;
         } else {
-            __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 1);
+            __HAL_TIM_SET_COMPARE(&htim8, TIM_CHANNEL_2, 1);
         }
 
         // ================================================
